@@ -36,7 +36,7 @@ def main():
         st.error("Incorrect password.")
         return
 
-    section = st.selectbox("Select section", ["Participants", "Revisited", "Groups.json"])
+    section = st.selectbox("Select section", ["Participants", "Revisited", "groups.json", "Feedback"])
 
     if section == "Participants":
         directory = "data/participants"
@@ -69,6 +69,8 @@ def main():
 
     elif section == "Revisited":
         directory = "data/revisited"
+        if not os.path.exists(directory):
+            st.write("No revisited data found.")
         json_files = [f for f in os.listdir(directory) if f.endswith(".json")]
         if not json_files:
             st.write("No JSON files found.")
@@ -95,7 +97,7 @@ def main():
                     use_container_width=True
                 )
 
-    elif section == "Groups.json":
+    elif section == "groups.json":
         file_path = "data/groups.json"
         if not os.path.exists(file_path):
             st.write("No groups.json file found.")
@@ -110,6 +112,36 @@ def main():
                 type="primary",
                 use_container_width=True
             )
+    elif section == "Feedback":
+        directory = "data/feedback"
+        if not os.path.exists(directory):
+            st.write("No feedback.json file found.")
+        json_files = [f for f in os.listdir(directory) if f.endswith(".json")]
+        if not json_files:
+            st.write("No JSON files found.")
+        else:
+            zip_buffer = create_zip(directory)
+            st.download_button(
+                label="Download All JSON files as ZIP",
+                data=zip_buffer,
+                file_name="feedback_json_files.zip",
+                mime="application/zip",
+                type="primary",
+                use_container_width=True
+            )
+            for file in json_files:
+                st.write(f"**{file}**")
+                data = openFile("data/feedback", file)
+                st.json(data)
+                st.download_button(
+                    label="Download JSON file",
+                    data=json.dumps(data),
+                    file_name=file,
+                    mime="application/json",
+                    type="primary",
+                    use_container_width=True
+                )
+
 
 if __name__ == "__main__":
     main()

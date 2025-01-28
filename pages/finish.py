@@ -5,7 +5,7 @@ import streamlit as st
 from pages.helper.file_helper import write_json
 from pages.helper.navigation import home, back
 
-st.set_page_config(page_title="Baseline Survey pt. 1", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
+st.set_page_config(page_title="Thank You", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
 
 
 FILE_PATH = "data/participants/"
@@ -42,3 +42,5 @@ st.text("")
 st.divider()
 if st.button("Back to home page 🏠︎"):
     home()
+if st.button("Give feedback 💬"):
+    st.switch_page("pages/feedback.py")

@@ -5,7 +5,7 @@ import streamlit as st
 from pages.helper.navigation import forward, home, get_header
 from pages.helper.random_assignments import assign_to_group
 
-st.set_page_config(page_title="Baseline Survey pt. 1", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
+st.set_page_config(page_title="Procedure", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
 
 # go to start if no session state
 if 'participant_id' not in st.session_state:

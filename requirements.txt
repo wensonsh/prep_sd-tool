@@ -1,9 +1,11 @@
 streamlit==1.41.1
 pandas~=2.2.3
 toml~=0.10.2
-langchain~=0.1.20
-langchain-community~=0.0.38
-langchain-core~=0.1.52
-langchain-text-splitters~=0.0.1
-langchain-openai~=0.1.6
-openai~=1.29.0
+streamlit
+openai
+langchain
+streamlit-ace
+langchain-community
+langchain-core
+langchain-text-splitters
+langchain-openai

@@ -1,6 +1,8 @@
 import json
+from cProfile import label
 
 import streamlit as st
+from streamlit import columns
 
 from pages.helper.navigation import forward
 from pages.helper.navigation import get_header
@@ -33,93 +35,139 @@ BASIC_LIKERT_OPTIONS = ["Strongly disagree", "Disagree", "Somewhat disagree", "N
 
 #TAIF
 st.text("")
+st.markdown("**The functionalities of the GenAI tool were very compatible with my task.**")
 TAIF1_index = None
 if "TAIF1" in data and data['TAIF1']:
     TAIF1_index = BASIC_LIKERT_OPTIONS.index(data["TAIF1"])
 taif1 = st.radio(
     label="**The functionalities of the GenAI tool were very compatible with my task.**",
+    label_visibility="collapsed",
     options=BASIC_LIKERT_OPTIONS,
     index=TAIF1_index,
     horizontal=True)
 
 st.text("")
+st.markdown("**The functionalities of the GenAI tool were very useful.**")
 TAIF2_index = None
 if "TAIF2" in data and data['TAIF2']:
     TAIF2_index = BASIC_LIKERT_OPTIONS.index(data["TAIF2"])
-taif2 = st.radio(label="**The functionalities of the GenAI tool were very useful.**", options=BASIC_LIKERT_OPTIONS, index=TAIF2_index,
-    horizontal=True)
+taif2 = st.radio(label="**The functionalities of the GenAI tool were very useful.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=TAIF2_index,
+                 horizontal=True)
 
 st.text("")
+st.markdown("**The GenAI tool made the task easy.**")
 TAIF3_index = None
 if "TAIF3" in data and data['TAIF3']:
     TAIF3_index = BASIC_LIKERT_OPTIONS.index(data["TAIF3"])
-taif3 = st.radio(label="**The GenAI tool made the task easy.**", options=BASIC_LIKERT_OPTIONS, index=TAIF3_index,
-    horizontal=True)
+taif3 = st.radio(label="**The GenAI tool made the task easy.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=TAIF3_index,
+                 horizontal=True)
 
 st.text("")
+st.markdown("**Using the GenAI tool fitted the way I work.**")
 TAIF4_index = None
 if "TAIF4" in data and data['TAIF4']:
     TAIF4_index = BASIC_LIKERT_OPTIONS.index(data["TAIF4"])
-taif4 = st.radio(label="**Using the GenAI tool fitted the way I work.**", options=BASIC_LIKERT_OPTIONS, index=TAIF4_index,
-    horizontal=True)
+taif4 = st.radio(label="**Using the GenAI tool fitted the way I work.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=TAIF4_index,
+                 horizontal=True)
 
 st.text("")
+st.markdown("**In general, the functionalities of the GenAI tool were best fit to the task.**")
 TAIF5_index = None
 if "TAIF5" in data and data['TAIF5']:
     TAIF5_index = BASIC_LIKERT_OPTIONS.index(data["TAIF5"])
-taif5 = st.radio(label="**In general, the functionalities of the GenAI tool were best fit to the task.**", options=BASIC_LIKERT_OPTIONS, index=TAIF5_index,
-    horizontal=True)
+taif5 = st.radio(label="**In general, the functionalities of the GenAI tool were best fit to the task.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=TAIF5_index,
+                 horizontal=True)
 
 st.divider()
 # HAIF
+st.markdown("**The GenAI tool was very compatible with my needs for completing the task.**")
 HAIF1_index = None
 if "HAIF1" in data and data['HAIF1']:
     HAIF1_index = BASIC_LIKERT_OPTIONS.index(data["HAIF1"])
-haif1 = st.radio(label="**The GenAI tool was very compatible with my needs for completing the task.**", options=BASIC_LIKERT_OPTIONS, index=HAIF1_index,
-    horizontal=True)
+haif1 = st.radio(label="**The GenAI tool was very compatible with my needs for completing the task.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=HAIF1_index,
+                 horizontal=True)
 
 st.text("")
+st.markdown("**The GenAI tool fitted my way of seeking assistance or information.**")
 HAIF2_index = None
 if "HAIF2" in data and data['HAIF2']:
     HAIF2_index = BASIC_LIKERT_OPTIONS.index(data["HAIF2"])
-haif2 = st.radio(label="**The GenAI tool fitted my way of seeking assistance or information.**", options=BASIC_LIKERT_OPTIONS, index=HAIF2_index,
-    horizontal=True)
+haif2 = st.radio(label="**The GenAI tool fitted my way of seeking assistance or information.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=HAIF2_index,
+                 horizontal=True)
 
 st.text("")
+st.markdown("**The overall interaction with the GenAI tool aligned with my preferences.**")
 HAIF3_index = None
 if "HAIF3" in data and data['HAIF3']:
     HAIF3_index = BASIC_LIKERT_OPTIONS.index(data["HAIF3"])
-haif3 = st.radio(label="**The overall interaction with the GenAI tool aligned with my preferences.**", options=BASIC_LIKERT_OPTIONS, index=HAIF3_index,
-    horizontal=True)
+haif3 = st.radio(label="**The overall interaction with the GenAI tool aligned with my preferences.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=HAIF3_index,
+                 horizontal=True)
 
 st.text("")
+st.markdown("**The response style of the GenAI tool aligned with my preferences.**")
 HAIF4_index = None
 if "HAIF4" in data and data['HAIF4']:
     HAIF4_index = BASIC_LIKERT_OPTIONS.index(data["HAIF4"])
-haif4 = st.radio(label="**The response style of the GenAI tool aligned with my preferences.**", options=BASIC_LIKERT_OPTIONS, index=HAIF4_index,
-    horizontal=True)
+haif4 = st.radio(label="**The response style of the GenAI tool aligned with my preferences.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=HAIF4_index,
+                 horizontal=True)
 
 st.text("")
+st.markdown("**I felt very frustrated during the interaction with the GenAI tool.**")
 HAIF5_index = None
 if "HAIF5" in data and data['HAIF5']:
     HAIF5_index = BASIC_LIKERT_OPTIONS.index(data["HAIF5"])
-haif5 = st.radio(label="**I felt very frustrated during the interaction with the GenAI tool.**", options=BASIC_LIKERT_OPTIONS, index=HAIF5_index,
-    horizontal=True)
+haif5 = st.radio(label="**I felt very frustrated during the interaction with the GenAI tool.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=HAIF5_index,
+                 horizontal=True)
 
 st.divider()
 # RQ
+st.markdown("**The GenAI tool helped me solve my task more effectively.**")
 RQ1_index = None
 if "RQ1" in data and data['RQ1']:
     RQ1_index = BASIC_LIKERT_OPTIONS.index(data["RQ1"])
-rq1 = st.radio(label="**The GenAI tool helped me solve my task more effectively.**", options=BASIC_LIKERT_OPTIONS, index=RQ1_index,
-    horizontal=True)
+rq1 = st.radio(label="**The GenAI tool helped me solve my task more effectively.**",
+               label_visibility="collapsed",
+               options=BASIC_LIKERT_OPTIONS,
+               index=RQ1_index,
+               horizontal=True)
 
 st.text("")
+st.markdown("**The GenAI tool had a positive impact on my ability to complete the task efficiently.**")
 RQ2_index = None
 if "RQ2" in data and data['RQ2']:
     RQ2_index = BASIC_LIKERT_OPTIONS.index(data["RQ2"])
-rq2= st.radio(label="**The GenAI tool had a positive impact on my ability to complete the task efficiently.**", options=BASIC_LIKERT_OPTIONS, index=RQ2_index,
-    horizontal=True)
+rq2= st.radio(label="**The GenAI tool had a positive impact on my ability to complete the task efficiently.**",
+              label_visibility="collapsed",
+              options=BASIC_LIKERT_OPTIONS,
+              index=RQ2_index,
+              horizontal=True)
 
 st.text("")
 RQ3_index = None
@@ -130,11 +178,15 @@ rq3 = st.radio(label="**The GenAI tool was able to aid me in completing the task
 
 st.divider()
 #LTUI
+st.markdown("**Given that I had access, I intend to continue using this GenAI tool rather than discontinue it.**")
 LTUI1_index = None
 if "LTUI1" in data and data['LTUI1']:
     LTUI1_index = BASIC_LIKERT_OPTIONS.index(data["LTUI1"])
-ltui1 = st.radio(label="**Given that I had access, I intend to continue using this GenAI tool rather than discontinue it.**", options=BASIC_LIKERT_OPTIONS, index=LTUI1_index,
-    horizontal=True)
+ltui1 = st.radio(label="**Given that I had access, I intend to continue using this GenAI tool rather than discontinue it.**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=LTUI1_index,
+                 horizontal=True)
 
 st.text("")
 LTUI2_index = None
@@ -143,12 +195,17 @@ if "LTUI2" in data and data['LTUI2']:
 LTUI2_label_default = "I would prefer using this GenAI tool rather than using any alternative means."
 LTUI2_label_tailored = "I would prefer using this GenAI tool with the given features rather than using any alternative means."
 LTUI2_label = LTUI2_label_default
+st.markdown(f"**{LTUI2_label}**")
 if "assigned_group" in data and data["assigned_group"] == "group_tailored":
     LTUI2_label = LTUI2_label_tailored
-ltui2 = st.radio(label=f"**{LTUI2_label}**", options=BASIC_LIKERT_OPTIONS, index=LTUI2_index,
-    horizontal=True)
+ltui2 = st.radio(label=f"**{LTUI2_label}**",
+                 label_visibility="collapsed",
+                 options=BASIC_LIKERT_OPTIONS,
+                 index=LTUI2_index,
+                 horizontal=True)
 
 st.text("")
+
 LTUI3_index = None
 LTUI3_label_default = "Given that I had access, I will not discontinue my use of this GenAI tool for software development tasks."
 LTUI3_label_tailored = "Given that I had access, I will not discontinue my use of this GenAI tool with the given features for software development tasks."
@@ -157,7 +214,9 @@ if "assigned_group" in data and data["assigned_group"] == "group_tailored":
     LTUI3_label = LTUI3_label_tailored
 if "LTUI3" in data and data['LTUI3']:
     LTUI3_index = BASIC_LIKERT_OPTIONS.index(data["LTUI3"])
+st.markdown(f"**{LTUI3_label}**")
 ltui3 = st.radio(label=f"**{LTUI3_label}**",
+                 label_visibility="collapsed",
                  options=BASIC_LIKERT_OPTIONS,
                  index=LTUI3_index,
                  horizontal=True)

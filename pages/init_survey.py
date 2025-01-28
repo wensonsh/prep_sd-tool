@@ -3,7 +3,7 @@ import json
 import streamlit as st
 from pages.helper.navigation import forward, home, get_header
 
-st.set_page_config(page_title="Baseline Survey pt. 1", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
+st.set_page_config(page_title="Baseline Survey", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
 
 # go to start if no session state
 if 'participant_id' not in st.session_state:
@@ -122,7 +122,6 @@ copilot_usage_swd_tasks = st.select_slider(
 )
 
 # ChatGPT usage types
-# @TODO: If you use ChatGPT for software development tasks, what is the main type of task you use it for (e.g. write code, understand code, fix code, etc.)?
 chat_gpt_usage_write_code = False
 if "chat_gpt_usage_write_code" in data and data['chat_gpt_usage_write_code']:
     chat_gpt_usage_write_code = data["chat_gpt_usage_write_code"]

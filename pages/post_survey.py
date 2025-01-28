@@ -1,8 +1,6 @@
 import json
-from cProfile import label
 
 import streamlit as st
-from streamlit import columns
 
 from pages.helper.navigation import forward
 from pages.helper.navigation import get_header
@@ -22,7 +20,7 @@ except FileNotFoundError:
 
 get_header(4, "pages/task.py", True, False, data, participant_id)
 
-st.title("Post Experiment Survey")
+st.title("Post-Experiment Survey")
 st.markdown(f"*Please fill out the following survey to help us understand your experience with the GenAI tool that was provided to you.*")
 
 def validate_form(taif1, taif2, taif3, taif4, taif5, haif1, haif2, haif3, haif4, haif5, rq1, rq2, rq3, ltui1, ltui2, ltui3):

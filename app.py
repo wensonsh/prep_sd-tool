@@ -3,6 +3,8 @@ import os
 
 import streamlit as st
 
+from pages.helper.file_helper import open_json, write_json
+from pages.helper.timer import get_current_time
 from utils import generate_random_id
 
 st.session_state.clear()
@@ -46,7 +48,9 @@ if st.session_state["current_page"] == "welcome":
             participant_id = generate_random_id()
         st.session_state["participant_id"] = participant_id
         data = {
-            "id": participant_id
+            "id": participant_id,
+            "next_page": "init_survey.py",
+            "start_time_general": get_current_time()
         }
         if not os.path.exists("data/participants/participant_" + participant_id + ".json"):
             with open("data/participants/participant_" + participant_id + ".json", "w") as file:
@@ -67,17 +71,22 @@ if st.session_state["current_page"] == "welcome":
             except FileNotFoundError:
                 st.switch_page("app.py")
 
-            next_page = "gen_ai_tool.py"
-
             st.session_state["participant_id"] = input_id
+
+            if "finished" in data and data["finished"]:
+                revisited_data = open_json("data/revisited/", input_id)
+                if "revisit_count" not in revisited_data:
+                    revisited_data["revisit_count"] = 0
+                else:
+                    revisited_data["revisit_count"] += 1
+                write_json("data/revisited/", input_id, revisited_data)
+                st.switch_page("pages/gen_ai_tool.py")
+
+            next_page = data["next_page"]
             st.switch_page("pages/" + next_page)
 
 # Demographic Survey Page
 elif st.session_state["current_page"] == "init_survey":
-    pass
-
-# Persona Survey Page
-elif st.session_state["current_page"] == "persona_survey":
     pass
 
 # Explanation Page
@@ -85,5 +94,9 @@ elif st.session_state["current_page"] == "procedure":
     pass
 
 # gen_ai_tool Page
-elif st.session_state["current_page"] == "gen_ai_tool":
+elif st.session_state["current_page"] == "task":
+    pass
+
+# post survey Page
+elif st.session_state["current_page"] == "post_survey":
     pass

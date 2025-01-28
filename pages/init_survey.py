@@ -21,7 +21,7 @@ get_header(1, "app.py", False, None, data, participant_id)
 st.title("Baseline Survey")
 st.markdown("Please fill out the following form to help us understand your background and experience with ChatGPT.")
 
-def validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_work):
+def validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_swd_tasks):
     errors = {}
     if not age:
         errors["age"] = "Please enter your age"
@@ -33,8 +33,8 @@ def validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_u
         errors["chat_gpt_proficiency"] = "Please enter your proficiency with ChatGPT"
     if not chat_gpt_usage_private:
         errors["chat_gpt_usage_private"] = "Please enter your usage frequency of GenAI tools like ChatGPT"
-    if not chat_gpt_usage_work:
-        errors["chat_gpt_usage_work"] = "Please enter your usage frequency of GenAI tools like ChatGPT or Copilot at work"
+    if not chat_gpt_usage_swd_tasks:
+        errors["chat_gpt_usage_swd_tasks"] = "Please enter your usage frequency of GenAI tools like ChatGPT or Copilot at work"
 
     return errors
 
@@ -81,7 +81,7 @@ chat_gpt_proficiency = st.selectbox(
 )
 
 # ChatGPT usage private
-chat_gpt_usage_values = ["never", "occasionally", "often", "(almost) every day"]
+chat_gpt_usage_values = ["never", "rarely", "sometimes", "often", "constantly"]
 chat_gpt_usage_index = None
 chat_gpt_usage_value = None
 
@@ -95,30 +95,30 @@ chat_gpt_usage_private = st.select_slider(
 )
 
 # ChatGPT usage work
-chat_gpt_usage_work_values = ["never", "occasionally", "often", "(almost) every time"]
-chat_gpt_usage_work_index = None
-chat_gpt_usage_work_value = None
+chat_gpt_usage_swd_tasks_values = ["never", "rarely", "sometimes", "often", "constantly"]
+chat_gpt_usage_swd_tasks_index = None
+chat_gpt_usage_swd_tasks_value = None
 
-if "chat_gpt_usage_work" in data and data['chat_gpt_usage_work']:
-    chat_gpt_usage_work_value = data["chat_gpt_usage_work"]
+if "chat_gpt_usage_swd_tasks" in data and data['chat_gpt_usage_swd_tasks']:
+    chat_gpt_usage_swd_tasks_value = data["chat_gpt_usage_swd_tasks"]
 
-chat_gpt_usage_work = st.select_slider(
+chat_gpt_usage_swd_tasks = st.select_slider(
     label = f"How often do you use **ChatGPT** for software development tasks?*",
-    options = chat_gpt_usage_work_values,
-    value = chat_gpt_usage_work_value
+    options = chat_gpt_usage_swd_tasks_values,
+    value = chat_gpt_usage_swd_tasks_value
 )
 # Copilot usage work
-copilot_usage_work_values = ["never", "occasionally", "often", "(almost) every time"]
-copilot_usage_work_index = None
-copilot_usage_work_value = None
+copilot_usage_swd_tasks_values = ["never", "rarely", "sometimes", "often", "constantly"]
+copilot_usage_swd_tasks_index = None
+copilot_usage_swd_tasks_value = None
 
-if "copilot_usage_work" in data and data['copilot_usage_work']:
-    copilot_usage_work_value = data["copilot_usage_work"]
+if "copilot_usage_swd_tasks" in data and data['copilot_usage_swd_tasks']:
+    copilot_usage_swd_tasks_value = data["copilot_usage_swd_tasks"]
 
-copilot_usage_work = st.select_slider(
+copilot_usage_swd_tasks = st.select_slider(
     label = f"How often do you use **GitHub Copilot** for software development tasks?*",
-    options = copilot_usage_work_values,
-    value = copilot_usage_work_value
+    options = copilot_usage_swd_tasks_values,
+    value = copilot_usage_swd_tasks_value
 )
 
 # ChatGPT usage types
@@ -153,7 +153,7 @@ if chat_gpt_usage_others:
 left, middle, right = st.columns([12,8,4])
 if right.button("Continue →", key="init_continue", type="primary"):
     # Clear previous error messages
-    errors = validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_work)
+    errors = validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_swd_tasks)
     if errors:
         if "age" in errors:
             st.error(errors["age"])
@@ -165,8 +165,8 @@ if right.button("Continue →", key="init_continue", type="primary"):
             st.error(errors["chat_gpt_proficiency"])
         if "chat_gpt_usage_private" in errors:
             st.error(errors["chat_gpt_usage_private"])
-        if "chat_gpt_usage_work" in errors:
-            st.error(errors["chat_gpt_usage_work"])
+        if "chat_gpt_usage_swd_tasks" in errors:
+            st.error(errors["chat_gpt_usage_swd_tasks"])
     else:
         if age != 0:
             data['age'] = str(age)
@@ -178,10 +178,10 @@ if right.button("Continue →", key="init_continue", type="primary"):
             data['chat_gpt_proficiency'] = chat_gpt_proficiency
         if chat_gpt_usage_private is not None:
             data['chat_gpt_usage_private'] = chat_gpt_usage_private
-        if chat_gpt_usage_work is not None:
-            data['chat_gpt_usage_work'] = chat_gpt_usage_work
-        if copilot_usage_work is not None:
-            data['copilot_usage_work'] = copilot_usage_work
+        if chat_gpt_usage_swd_tasks is not None:
+            data['chat_gpt_usage_swd_tasks'] = chat_gpt_usage_swd_tasks
+        if copilot_usage_swd_tasks is not None:
+            data['copilot_usage_swd_tasks'] = copilot_usage_swd_tasks
         if chat_gpt_usage_write_code is not None:
             data['chat_gpt_usage_write_code'] = chat_gpt_usage_write_code
         if chat_gpt_usage_understand_code is not None:
@@ -194,9 +194,9 @@ if right.button("Continue →", key="init_continue", type="primary"):
             data['chat_gpt_usage_others_text'] = chat_gpt_usage_others_text
         data["exp_finished"] = False
 
-        data["next_page"] = "persona_survey.py"
+        data["next_page"] = "procedure.py"
         with open("data/participants/participant_" + participant_id + ".json", "w") as f:
             json.dump(data, f)
 
-        if 'age' in data and 'job' in data and 'chat_gpt_proficiency' in data and 'chat_gpt_usage_private' in data and 'chat_gpt_usage_work' in data:
+        if 'age' in data and 'job' in data and 'chat_gpt_proficiency' in data and 'chat_gpt_usage_private' in data and 'chat_gpt_usage_swd_tasks' in data:
             forward("pages/procedure.py", False, False, None, None)

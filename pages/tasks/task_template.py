@@ -55,6 +55,10 @@ def get_task_for_prompt(difficulty):
         prompt += f"Explanation: {example['explanation']}\n\n"
     prompt += f"Additional Info: {task['additional_info']}\n"
 
+    for hint in task["hints"]:
+        prompt += f"{hint['title']}:\n"
+        prompt += f"{hint['description']}\n"
+
     return prompt
 
 def get_task_template_for_prompt(difficulty):

@@ -8,6 +8,8 @@ from pages.helper.navigation import home, back
 st.set_page_config(page_title="Baseline Survey pt. 1", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
 
 
+FILE_PATH = "data/participants/"
+
 # go to start if no session state
 if 'participant_id' not in st.session_state:
     home()
@@ -28,7 +30,7 @@ elif "age" not in data:
     back("pages/post_survey.py")
 
 data["finished"] = True
-write_json(participant_id, data)
+write_json(FILE_PATH, participant_id, data)
 
 st.title("Finish")
 st.markdown("""You have successfully completed the experiment. Thank you so much for your participation!""")

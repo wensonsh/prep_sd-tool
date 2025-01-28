@@ -49,7 +49,7 @@ def assign_to_group(participant_id):
     # Check if the participant is already assigned
     for participant in group_data:
         if participant['id'] == participant_id:
-            return (f"{participant_id} already assigned to group '{participant['group']}' with task '{participant['task']}'")
+            return participant['group']
 
     # Count participants in each group
     count_default = sum(1 for p in group_data if p['group'] == 'group_default')
@@ -85,4 +85,4 @@ def assign_to_group(participant_id):
     with open(participant_file, 'w') as f:
         json.dump(participant_data, f)
 
-    return f"{participant_id} assigned to {assigned_group.capitalize()} with Task '{assigned_task.capitalize()}'"
+    return assigned_group

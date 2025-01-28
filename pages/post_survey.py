@@ -4,6 +4,7 @@ import streamlit as st
 
 from pages.helper.navigation import forward
 from pages.helper.navigation import get_header
+from pages.helper.timer import get_current_time
 
 st.set_page_config(page_title="Post-Experiment Survey", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'}, layout="wide")
 # go to start if no session state
@@ -17,7 +18,7 @@ try:
 except FileNotFoundError:
     st.switch_page("app.py")
 
-get_header(4, "pages/gen_ai_tool.py", True, False, data, participant_id)
+get_header(4, "pages/task.py", True, False, data, participant_id)
 
 st.title("Post Experiment Survey")
 st.markdown(f"*Please fill out the following survey to help us understand your experience with the GenAI tool that was provided to you.*")
@@ -142,7 +143,7 @@ if "LTUI2" in data and data['LTUI2']:
 LTUI2_label_default = "I would prefer using this GenAI tool rather than using any alternative means."
 LTUI2_label_tailored = "I would prefer using this GenAI tool with the given features rather than using any alternative means."
 LTUI2_label = LTUI2_label_default
-if "assigned_group" in data and data["assigned_group"] == "tailored":
+if "assigned_group" in data and data["assigned_group"] == "group_tailored":
     LTUI2_label = LTUI2_label_tailored
 ltui2 = st.radio(label=f"**{LTUI2_label}**", options=BASIC_LIKERT_OPTIONS, index=LTUI2_index,
     horizontal=True)
@@ -152,7 +153,7 @@ LTUI3_index = None
 LTUI3_label_default = "Given that I had access, I will not discontinue my use of this GenAI tool for software development tasks."
 LTUI3_label_tailored = "Given that I had access, I will not discontinue my use of this GenAI tool with the given features for software development tasks."
 LTUI3_label = LTUI3_label_default
-if "assigned_group" in data and data["assigned_group"] == "tailored":
+if "assigned_group" in data and data["assigned_group"] == "group_tailored":
     LTUI3_label = LTUI3_label_tailored
 if "LTUI3" in data and data['LTUI3']:
     LTUI3_index = BASIC_LIKERT_OPTIONS.index(data["LTUI3"])
@@ -207,8 +208,9 @@ if right.button("Submit", key="submit", type="primary"):
             data['LTUI2'] = ltui2
         if ltui3:
             data['LTUI3'] = ltui3
-        data["next_page"] = "finish"
+        data["next_page"] = "finish.py"
         data["exp_finished"] = True
+        data["end_time_general"] = get_current_time()
         with open("data/participants/participant_" + participant_id + ".json", "w") as f:
             json.dump(data, f)
         forward("pages/finish.py", False, False, None, None)

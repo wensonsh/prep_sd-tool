@@ -3,6 +3,8 @@ import streamlit as st
 from pages.helper.file_helper import write_json
 from pages.helper.timer import get_current_time
 
+FILE_PATH = "data/participants/"
+
 def home():
     return st.switch_page("app.py")
 
@@ -17,14 +19,14 @@ def forward(page, start_timer, end_timer, data, participant_id):
             data["start_time_rep"] = current_time
         elif "start_time_rep" in data:
             data["start_time_rep"] = str(data["start_time_rep"]) + " -> " + current_time
-        write_json(participant_id, data)
+        write_json(FILE_PATH, participant_id, data)
     elif end_timer:
         if "end_time" not in data:
             data["end_time"] = current_time
             data["end_time_rep"] = current_time
         elif "end_time_rep" in data:
             data["end_time_rep"] = str(data["end_time_rep"]) + " -> " + current_time
-        write_json(participant_id, data)
+        write_json(FILE_PATH, participant_id, data)
     return st.switch_page(page)
 
 def get_header(current_page, back_link, start_timer, end_timer, data, participant_id):
@@ -39,7 +41,7 @@ def get_header(current_page, back_link, start_timer, end_timer, data, participan
                     data["start_time_rep"] = current_time
                 elif "start_time_rep" in data:
                     data["start_time_rep"] = str(data["start_time_rep"]) + " -> " + current_time
-                write_json(participant_id, data)
+                write_json(FILE_PATH, participant_id, data)
             elif end_timer:
                 current_time = get_current_time()
                 if "end_time" not in data:
@@ -47,7 +49,7 @@ def get_header(current_page, back_link, start_timer, end_timer, data, participan
                     data["end_time_rep"] = current_time
                 elif "end_time_rep" in data:
                     data["end_time_rep"] = str(data["end_time_rep"]) + " -> " + current_time
-                write_json(participant_id, data)
+                write_json(FILE_PATH, participant_id, data)
             back(back_link)
     if current_page:
         with header_right:

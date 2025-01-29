@@ -73,12 +73,40 @@ if st.session_state["current_page"] == "welcome":
 
             st.session_state["participant_id"] = input_id
 
-            if "finished" in data and data["finished"]:
+            if "exp_finished" in data and data["exp_finished"]:
                 revisited_data = open_json("data/revisited/", input_id)
                 if "revisit_count" not in revisited_data:
-                    revisited_data["revisit_count"] = 0
+                    revisited_data["revisit_count"] = 1
                 else:
                     revisited_data["revisit_count"] += 1
+                revisited_data["assigned_group"] = data["assigned_group"]
+                # transfer the data from the previous experiment to the revisited tool
+                if "assigned_group" in data and data["assigned_group"] == "group_tailored":
+                    if "response_template" not in revisited_data:
+                        revisited_data["response_template"] = data["response_template"]
+                        if "response_template_other" in data:
+                            revisited_data["response_template_other"] = data["response_template_other"]
+                    if "response_style" not in revisited_data:
+                        revisited_data["response_style"] = data["response_style"]
+                        if "response_style_other" in data:
+                            revisited_data["response_style_other"] = data["response_style_other"]
+                    if "role" not in revisited_data:
+                        revisited_data["role"] = data["role"]
+                        if "role_other" in data:
+                            revisited_data["role_other"] = data["role_other"]
+                    if "response_length" not in revisited_data:
+                        revisited_data["response_length"] = data["response_length"]
+                        if "response_length_other" in data:
+                            revisited_data["response_length_other"] = data["response_length_other"]
+                    if "code_adjustment" not in revisited_data:
+                        revisited_data["code_adjustment"] = data["code_adjustment"]
+                        if "code_adjustment_other" in data:
+                            revisited_data["code_adjustment_other"] = data["code_adjustment_other"]
+                    if "python_proficiency" not in revisited_data:
+                        revisited_data["python_proficiency"] = data["python_proficiency"]
+                    if "java_proficiency" not in revisited_data:
+                        revisited_data["java_proficiency"] = data["java_proficiency"]
+
                 write_json("data/revisited/", input_id, revisited_data)
                 st.switch_page("pages/gen_ai_tool.py")
 

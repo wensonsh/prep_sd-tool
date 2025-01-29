@@ -21,7 +21,7 @@ get_header(1, "app.py", False, None, data, participant_id)
 st.title("Baseline Survey")
 st.markdown("Please fill out the following form to help us understand your background and experience with ChatGPT.")
 
-def validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_swd_tasks):
+def validate_form(age, job, python_proficiency, java_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_swd_tasks):
     errors = {}
     if not age:
         errors["age"] = "Please enter your age"
@@ -29,6 +29,8 @@ def validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_u
         errors["job"] = "Please enter your job"
     if not python_proficiency:
         errors["python_proficiency"] = "Please select your proficiency with Python."
+    if not java_proficiency:
+        errors["java_proficiency"] = "Please select your proficiency with Java."
     if not chat_gpt_proficiency or chat_gpt_proficiency is None:
         errors["chat_gpt_proficiency"] = "Please enter your proficiency with ChatGPT"
     if not chat_gpt_usage_private:
@@ -51,7 +53,7 @@ else:
     job = st.text_input("What is your current occupation?*",  key = "job")
 
 # PYTHON PROFICIENCY
-python_proficiency_values = ["Beginner", "Intermediate", "Advanced", "Expert"]
+python_proficiency_values = ["No Experience", "Beginner", "Intermediate", "Advanced", "Expert"]
 python_proficiency_index = None
 
 if "python_proficiency" in data and data["python_proficiency"]:
@@ -64,10 +66,24 @@ python_proficiency = st.selectbox(
     placeholder="Please select"
 )
 
+# JAVA PROFICIENCY
+java_proficiency_values = ["No Experience", "Beginner", "Intermediate", "Advanced", "Expert"]
+java_proficiency_index = None
+
+if "java_proficiency" in data and data["java_proficiency"]:
+    java_proficiency_index = java_proficiency_values.index(data["java_proficiency"])
+
+java_proficiency = st.selectbox(
+    label="How proficient are you with Java?*",
+    options=java_proficiency_values,
+    index=java_proficiency_index,
+    placeholder="Please select"
+)
+
 st.divider()
 
 # ChatGPT proficiency
-chat_gpt_proficiency_values = ["Beginner", "Intermediate", "Advanced", "Expert"]
+chat_gpt_proficiency_values = ["No Experience", "Beginner", "Intermediate", "Advanced", "Expert"]
 chat_gpt_proficiency_index = None
 
 if "chat_gpt_proficiency" in data and data['chat_gpt_proficiency']:
@@ -141,7 +157,7 @@ if "chat_gpt_usage_others" in data and data['chat_gpt_usage_others']:
 chat_gpt_usage_others_text = ""
 if "chat_gpt_usage_others_text" in data and data['chat_gpt_usage_others_text']:
     chat_gpt_usage_others_text = data["chat_gpt_usage_others_text"]
-st.write("If you use ChatGPT for software development tasks, what kind of tasks do you use it for?*")
+st.write("If you use ChatGPT for software development tasks, what kind of tasks do you use it for?")
 chat_gpt_usage_write_code = st.checkbox(label="Writing code", value = chat_gpt_usage_write_code)
 chat_gpt_usage_understand_code = st.checkbox(label = "Understanding code", value = chat_gpt_usage_understand_code)
 chat_gpt_usage_fix_code = st.checkbox(label = "Fixing code / finding errors", value = chat_gpt_usage_fix_code)
@@ -152,7 +168,7 @@ if chat_gpt_usage_others:
 left, middle, right = st.columns([12,8,4])
 if right.button("Continue →", key="init_continue", type="primary"):
     # Clear previous error messages
-    errors = validate_form(age, job, python_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_swd_tasks)
+    errors = validate_form(age, job, python_proficiency, java_proficiency, chat_gpt_proficiency, chat_gpt_usage_private, chat_gpt_usage_swd_tasks)
     if errors:
         if "age" in errors:
             st.error(errors["age"])
@@ -160,6 +176,8 @@ if right.button("Continue →", key="init_continue", type="primary"):
             st.error(errors["job"])
         if "python_proficiency" in errors:
             st.error(errors["python_proficiency"])
+        if "java_proficiency" in errors:
+            st.error(errors["java_proficiency"])
         if "chat_gpt_proficiency" in errors:
             st.error(errors["chat_gpt_proficiency"])
         if "chat_gpt_usage_private" in errors:
@@ -173,6 +191,8 @@ if right.button("Continue →", key="init_continue", type="primary"):
             data['job'] = job
         if python_proficiency:
             data['python_proficiency'] = python_proficiency
+        if java_proficiency:
+            data['java_proficiency'] = java_proficiency
         if chat_gpt_proficiency is not None:
             data['chat_gpt_proficiency'] = chat_gpt_proficiency
         if chat_gpt_usage_private is not None:

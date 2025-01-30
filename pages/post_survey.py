@@ -220,6 +220,11 @@ ltui3 = st.radio(label=f"**{LTUI3_label}**",
                  horizontal=True)
 
 st.divider()
+st.markdown(f"**Did you use any other tools or resources (e.g. Google) while solving the task? If yes, please specify: (optional)**")
+other_resources = st.text_input(label="**Did you use any other tools or resources (e.g. Google) while solving the task? If yes, please specify:**",
+                            label_visibility="collapsed",
+                            placeholder="Please specify the tools or resources you used.")
+
 st.markdown(f"**Is there anything else you would like to share? (optional)**")
 others_shared = st.text_area(label="Is there anything else you would like to share?",
                              label_visibility="collapsed",
@@ -273,6 +278,8 @@ if right.button("Submit", key="submit", type="primary"):
             data['LTUI3'] = ltui3
         if others_shared:
             data['others_shared'] = others_shared
+        if other_resources:
+            data['other_resources'] = other_resources
         data["next_page"] = "finish.py"
         data["exp_finished"] = True
         data["end_time_general"] = get_current_time()

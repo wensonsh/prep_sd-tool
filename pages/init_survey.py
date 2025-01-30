@@ -17,7 +17,8 @@ except FileNotFoundError:
     home()
 
 get_header(1, "app.py", False, None, data, participant_id)
-
+st.info(f"Your participant ID is: **{participant_id}**.\n\nIf necessary, you can use this ID to resume the experiment later. "
+        f"However, after moving past this page, we ask you to complete the experiment in one session to ensure consistency.")
 st.title("Baseline Survey")
 st.markdown("Please fill out the following form to help us understand your background and experience with ChatGPT.")
 

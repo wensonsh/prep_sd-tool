@@ -78,7 +78,7 @@ if assigned_group == "group_tailored":
 st.markdown("Please be aware, that the answers from the GenAI tool are not always right. Feel free to change the settings above the GenAI tool to adjust the interaction and response style.")
 st.divider()
 st.write("Your results will be saved as soon as you click on the 'Submit and continue' button on the right and you will be directed to the next page to conclude the experiment. "
-         "You do not have to submit a correct answer, just try solving the task until you are satisfied. You should not take longer than 20 minutes, though.")
+         "You do not have to submit a correct answer, just try solving the task until you are satisfied. If it takes you more than 20 minutes, feel free to submit an incomplete or incorrect answer and make a small note to your submission stating that you are aware that it's incomplete or incorrect.")
 st.write("Happy collaboration! 🎉")
 
 @st.dialog("Interaction and Response Settings")

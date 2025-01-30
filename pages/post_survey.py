@@ -191,7 +191,7 @@ LTUI2_index = None
 if "LTUI2" in data and data['LTUI2']:
     LTUI2_index = BASIC_LIKERT_OPTIONS.index(data["LTUI2"])
 LTUI2_label_default = "I would prefer using this GenAI tool rather than using any alternative means."
-LTUI2_label_tailored = "I would prefer using this GenAI tool with the given features rather than using any alternative means."
+LTUI2_label_tailored = "I would prefer using this GenAI tool with the given features rather than using any alternative means.*"
 LTUI2_label = LTUI2_label_default
 st.markdown(f"**{LTUI2_label}**")
 if "assigned_group" in data and data["assigned_group"] == "group_tailored":
@@ -219,6 +219,12 @@ ltui3 = st.radio(label=f"**{LTUI3_label}**",
                  index=LTUI3_index,
                  horizontal=True)
 
+st.divider()
+st.markdown(f"**Is there anything else you would like to share? (optional)**")
+others_shared = st.text_area(label="Is there anything else you would like to share?",
+                             label_visibility="collapsed",
+                             placeholder="Please share your thoughts here.",
+                             height=200)
 
 # Finish
 st.text("")
@@ -265,6 +271,8 @@ if right.button("Submit", key="submit", type="primary"):
             data['LTUI2'] = ltui2
         if ltui3:
             data['LTUI3'] = ltui3
+        if others_shared:
+            data['others_shared'] = others_shared
         data["next_page"] = "finish.py"
         data["exp_finished"] = True
         data["end_time_general"] = get_current_time()

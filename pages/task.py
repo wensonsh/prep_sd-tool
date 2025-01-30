@@ -12,7 +12,7 @@ from pages.tasks.task_template import display_task, get_task_for_prompt, get_tas
 
 # Constants
 DATA_PATH = "data/participants/"
-PAGE_TITLE = "Collaborating with your GenAI assistant"
+PAGE_TITLE = "Collaborating with your GenAI tool"
 ERROR_MSG = "Your solution is empty. Please submit a solution."
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
@@ -30,15 +30,16 @@ def save_participant_data(participant_id, data):
         json.dump(data, f)
 
 
-def initialize_session_state(group, difficulty, selected_role, participant_proficiency_level, selected_response_style, selected_response_template, selected_response_length, selected_code_correction_style):
+def initialize_session_state(group, difficulty, selected_role, participant_proficiency_level, selected_response_style, selected_response_template, selected_response_length, selected_code_correction_style, lang):
     if group == "group_tailored":
         if ("system_prompt" not in st.session_state or
                 st.session_state["system_prompt"] is None or
                 st.session_state["system_prompt"] == ""):
-            task_description = get_task_for_prompt(difficulty) + "\n\n" + get_task_template_for_prompt(difficulty)
+            task_description = get_task_for_prompt(difficulty) + "\n\n" + get_task_template_for_prompt(difficulty, lang)
             st.session_state["system_prompt"] = get_prompted_assistant(
                 role=selected_role,
                 proficiency_level=participant_proficiency_level,
+                lang=lang,
                 response_style=selected_response_style,
                 response_template=selected_response_template,
                 response_length=selected_response_length,
@@ -62,7 +63,7 @@ def main():
     participant_id = st.session_state["participant_id"]
     data = load_participant_data(participant_id)
 
-    if "finished" in data and data["finished"]:
+    if "exp_finished" in data and data["exp_finished"]:
         st.switch_page("pages/gen_ai_tool.py")
 
     get_header(3, "pages/procedure.py", False, False, data, participant_id)
@@ -82,7 +83,20 @@ def main():
         assigned_group = random.choice(["group_default", "group_tailored"])
 
     with st.sidebar:
-        display_task(task_difficulty)
+        if "chosen_lang" in data and data["chosen_lang"]:
+            chosen_language = data["chosen_lang"]
+        else:
+            chosen_language = "Python"
+        display_task(task_difficulty, chosen_language)
+
+    # initialize proficiency level
+    try:
+        if chosen_language == "Python":
+            proficiency_in_chosen_lang = data["python_proficiency"]
+        else:
+            proficiency_in_chosen_lang = data["java_proficiency"]
+    except KeyError:
+        proficiency_in_chosen_lang = "unknown expertise"
 
     with (middle):
         role = None
@@ -93,7 +107,7 @@ def main():
         if assigned_group == "group_tailored":
             with st.expander("***Interaction and Response Settings***", expanded=False):
                 # CHOOSE RESPONSE TEMPLATE
-                response_template_options = ["Code only", "Step-by-step instructions + code block", "High-level overview + code block + explanation", "Others"]
+                response_template_options = ["Code only", "Step-by-step instructions + code block", "High-level overview + code block + explanation", "Other"]
                 response_template_index = None
                 if "response_template" in data and data["response_template"] and data["response_template"] in response_template_options:
                     response_template_index = response_template_options.index(data["response_template"])
@@ -103,11 +117,11 @@ def main():
                                              key="response_template",
                                              horizontal=True)
 
-                if response_template == "Others":
+                if response_template == "Other":
                     response_template_input = ""
-                    if "response_template" in data and data["response_template"] and data["response_template"] not in response_template_options:
-                        response_template_input = data["response_template"]
-                    st.text_input(label = "Please enter your preferred response template",
+                    if "response_template_other" in data and data["response_template_other"]:
+                        response_template_input = data["response_template_other"]
+                    response_template_other = st.text_input(label = "Please enter your preferred response template",
                                   label_visibility="collapsed",
                                   placeholder="Please enter your preferred response template",
                                   value=response_template_input)
@@ -115,7 +129,7 @@ def main():
                 # RESPONSE STYLE
                 response_style_options = ["Bullet points", "Continuous text", "Other"]
                 response_style_index = None
-                if "response_style" in data and data["response_style"] and data["response_style"] in response_template_options:
+                if "response_style" in data and data["response_style"] and data["response_style"] in response_style_options:
                     response_style_index = response_style_options.index(data["response_style"])
 
                 response_style = st.radio(label="**Response style**",
@@ -124,9 +138,9 @@ def main():
                                           horizontal=True)
                 if response_style == "Other":
                     response_style_input = ""
-                    if "response_style" in data and data["response_style"] and data["response_style"] not in response_style_options:
-                        response_style_input = data["response_style"]
-                    st.text_input(label="Preferred response style",
+                    if "response_style_other" in data and data["response_style_other"]:
+                        response_style_input = data["response_style_other"]
+                    response_style_other = st.text_input(label="Preferred response style",
                                   label_visibility="collapsed",
                                   placeholder="Please enter your preferred response style",
                                   value=response_style_input)
@@ -143,15 +157,15 @@ def main():
                                 horizontal=True)
                 if role == "Other":
                     role_input = ""
-                    if "role" in data and data["role"] and data["role"] not in role_options:
-                        role_input = data["role"]
-                    st.text_input(label="Preferred role",
+                    if "role_other" in data and data["role_other"]:
+                        role_input = data["role_other"]
+                    role_other = st.text_input(label="Preferred role",
                                   label_visibility="collapsed",
                                   placeholder="Please enter the preferred role",
                                   value=role_input)
 
                 # RESPONSE LENGTH
-                response_length_options = ["Concise", "Short and comprehensive", "Detailed and comprehensive", "Others"]
+                response_length_options = ["Concise", "Short and comprehensive", "Detailed and comprehensive", "Other"]
                 response_length_index = None
                 if "response_length" in data and data["response_length"] and data["response_length"] in response_length_options:
                     response_length_index = response_length_options.index(data["response_length"])
@@ -160,16 +174,17 @@ def main():
                                            key="response_length",
                                            horizontal=True,
                                            index=response_length_index)
-                if response_length == "Others":
-                    if "response_length" in data and data["response_length"] and data["response_length"] not in response_length_options:
-                        response_length_input = data["response_length"]
-                    st.text_input(label="Preferred response length",
+                if response_length == "Other":
+                    response_length_input = ""
+                    if "response_length_other" in data and data["response_length_other"]:
+                        response_length_input = data["response_length_other"]
+                    response_length_other = st.text_input(label="Preferred response length",
                                   label_visibility="collapsed",
                                   placeholder="Please enter the preferred response length",
                                   value=response_length_input)
 
                 # CODE ADJUSTMENT
-                code_adjustment_options = ["Provide the whole code", "Provide the whole code and highlight changed parts", "Only show adjusted code snippets", "Others"]
+                code_adjustment_options = ["Provide the whole code", "Provide the whole code and highlight changed parts", "Only show adjusted code snippets", "Other"]
                 code_adjustment_index = None
                 if "code_adjustment" in data and data["code_adjustment"] and data["code_adjustment"] in code_adjustment_options:
                     code_adjustment_index = code_adjustment_options.index(data["code_adjustment"])
@@ -178,36 +193,63 @@ def main():
                                            key="code_adjustment",
                                            horizontal=True,
                                            index=code_adjustment_index)
-                if code_adjustment == "Others":
-                    if "code_adjustment" in data and data["code_adjustment"] and data["code_adjustment"] not in code_adjustment_options:
-                        code_adjustment_input = data["code_adjustment"]
-                    st.text_input(label="Preferred code adjustment style",
+                if code_adjustment == "Other":
+                    code_adjustment_input = ""
+                    if "code_adjustment_other" in data and data["code_adjustment_other"]:
+                        code_adjustment_input = data["code_adjustment_other"]
+                    code_adjustment_other = st.text_input(label="Preferred code adjustment style",
                                   label_visibility="collapsed",
                                   placeholder="Please enter the preferred code adjustment style",
                                   value=code_adjustment_input)
 
                 if st.button("Save settings"):
-                    sys_prompt = get_task_for_prompt(task_difficulty) + "\n\n" + get_task_template_for_prompt(task_difficulty)
+                    data["settings_changed_count"] = data.get("settings_changed_count", 0) + 1
+                    task = get_task_for_prompt(task_difficulty) + "\n\n" + get_task_template_for_prompt(task_difficulty, chosen_language)
+                    data["response_template"] = response_template
+                    if response_template == "Other" and response_template_other:
+                        data["response_template_other"] = response_template_other
+                        response_template = response_template_other
+                    data["response_style"] = response_style
+                    if response_style == "Other" and response_style_other:
+                        data["response_style_other"] = response_style_other
+                        response_style = response_style_other
+                    data["role"] = role
+                    if role == "Other" and role_other:
+                        data["role_other"] = role_other
+                        role = role_other
+                    data["response_length"] = response_length
+                    if response_length == "Other" and response_length_other:
+                        data["response_length_other"] = response_length_other
+                        response_length = response_length_other
+                    data["code_adjustment"] = code_adjustment
+                    if code_adjustment == "Other" and code_adjustment_other:
+                        data["code_adjustment_other"] = code_adjustment_other
+                        code_adjustment = code_adjustment_other
                     st.session_state["system_prompt"] = get_prompted_assistant(
                         role=role,
-                        proficiency_level=data["python_proficiency"],
+                        proficiency_level=proficiency_in_chosen_lang,
+                        lang=chosen_language,
                         response_style=response_style,
                         response_template=response_template,
                         response_length=response_length,
                         code_correction_style=code_adjustment,
-                        task=sys_prompt)
-                    data["response_template"] = response_template
-                    data["response_style"] = response_style
-                    data["role"] = role
-                    data["response_length"] = response_length
-                    data["code_adjustment"] = code_adjustment
+                        task=task)
+
                     if "system_prompt" in data and data["system_prompt"]:
                         data["system_prompt"] = data["system_prompt"] + "   ->  " + st.session_state["system_prompt"]
                     else:
                         data["system_prompt"] = st.session_state["system_prompt"]
                     save_participant_data(participant_id, data)
 
-        initialize_session_state(assigned_group, task_difficulty, role, data["python_proficiency"], response_style, response_template, response_length, code_adjustment)
+        initialize_session_state(group=assigned_group,
+                                 difficulty=task_difficulty,
+                                 selected_role=role,
+                                 participant_proficiency_level=proficiency_in_chosen_lang,
+                                 selected_response_style=response_style,
+                                 selected_response_template=response_template,
+                                 selected_response_length=response_length,
+                                 selected_code_correction_style=code_adjustment,
+                                 lang=chosen_language)
         chat_template = ChatPromptTemplate.from_messages(
             [
                 ("system", st.session_state["system_prompt"]),

@@ -1,4 +1,3 @@
-import json
 import random
 
 import streamlit as st
@@ -11,7 +10,6 @@ from pages.helper.file_helper import open_json, write_json
 from pages.helper.navigation import home
 
 # Constants
-
 PAGE_TITLE = "GenAI Tool"
 REVISITED_FILE_PATH = "data/revisited/"
 PARTICIPANT_FILE_PATH = "data/participants/"
@@ -19,7 +17,7 @@ PARTICIPANT_FILE_PATH = "data/participants/"
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
 
-def initialize_session_state(group, selected_role, participant_proficiency_level, selected_response_style, selected_response_template, selected_response_length, selected_code_correction_style):
+def initialize_session_state(group, selected_role, lang_input, participant_proficiency_level, selected_response_style, selected_response_template, selected_response_length, selected_code_correction_style):
     if group == "group_tailored":
         if ("system_prompt" not in st.session_state or
                 st.session_state["system_prompt"] is None or
@@ -27,6 +25,7 @@ def initialize_session_state(group, selected_role, participant_proficiency_level
             st.session_state["system_prompt"] = get_prompted_assistant_without_task(
                 role=selected_role,
                 proficiency_level=participant_proficiency_level,
+                lang=lang_input,
                 response_style=selected_response_style,
                 response_template=selected_response_template,
                 response_length=selected_response_length,
@@ -47,14 +46,13 @@ def main():
         home()
 
     participant_id = st.session_state["participant_id"]
-    participant_data = open_json(PARTICIPANT_FILE_PATH, participant_id)
     revisited_data = open_json(REVISITED_FILE_PATH, participant_id)
 
     st.title(PAGE_TITLE)
 
     # get assigned group
-    if "assigned_group" in participant_data and participant_data["assigned_group"]:
-        assigned_group = participant_data["assigned_group"]
+    if "assigned_group" in revisited_data and revisited_data["assigned_group"]:
+        assigned_group = revisited_data["assigned_group"]
     else:
         assigned_group = random.choice(["group_default", "group_tailored"])
 
@@ -68,33 +66,79 @@ def main():
         response_template = None
         response_length = None
         code_adjustment = None
+        proficiency = None
+        chosen_language = None
         if assigned_group == "group_tailored":
+            # INTERACTION SETTINGS
             with st.expander("***Interaction and Response Settings***", expanded=False):
+                if st.button("⏮️ Reset settings", type="tertiary"):
+                    st.session_state["system_prompt"] = get_prompted_assistant_without_task(
+                        role=None,
+                        proficiency_level=None,
+                        lang=None,
+                        response_style=None,
+                        response_template=None,
+                        response_length=None,
+                        code_correction_style=None)
+                    st.success("Your settings have been reset.", icon="⏮️")
+                    revisited_data["role"] = None
+                    revisited_data["response_style"] = None
+                    revisited_data["response_template"] = None
+                    revisited_data["response_length"] = None
+                    revisited_data["code_adjustment"] = None
+                    revisited_data["proficiency_level_for_chosen_lang"] = None
+                    write_json(REVISITED_FILE_PATH, participant_id, revisited_data)
+
+
+                prev_chosen_language = ""
+                if "chosen_lang" in revisited_data and revisited_data["chosen_lang"]:
+                    prev_chosen_language = revisited_data["chosen_lang"]
+                chosen_language = st.text_input(
+                    label=f"**If you wish the GenAI tool to adapt to a specific programming language, please enter the language here:**",
+                    placeholder="Please enter",
+                    value=prev_chosen_language)
+
+                if chosen_language and chosen_language != "":
+                    proficiency_values = ["No Experience", "Beginner", "Intermediate", "Advanced", "Expert"]
+                    proficiency_index = None
+
+                    if "proficiency" in revisited_data and revisited_data["proficiency"]:
+                        proficiency_index = proficiency_values.index(revisited_data["proficiency"])
+
+                    proficiency = st.selectbox(
+                        label="How proficient are you with Java?*",
+                        options=proficiency_values,
+                        index=proficiency_index,
+                        placeholder="Please select"
+                    )
+                    revisited_data["proficiency"] = proficiency
+
                 # CHOOSE RESPONSE TEMPLATE
                 response_template_options = ["Code only", "Step-by-step instructions + code block", "High-level overview + code block + explanation", "Others"]
                 response_template_index = None
-                if "response_template" in participant_data and participant_data["response_template"] and participant_data["response_template"] in response_template_options:
-                    response_template_index = response_template_options.index(participant_data["response_template"])
+                if "response_template" in revisited_data and revisited_data["response_template"] and revisited_data["response_template"] in response_template_options:
+                    response_template_index = response_template_options.index(revisited_data["response_template"])
                 response_template = st.radio(label="**Response template for code-related answers**",
                                              options=response_template_options,
                                              index=response_template_index,
                                              key="response_template",
                                              horizontal=True)
 
-                if response_template == "Others":
+                if response_template == "Other":
                     response_template_input = ""
-                    if "response_template" in participant_data and participant_data["response_template"] and participant_data["response_template"] not in response_template_options:
-                        response_template_input = participant_data["response_template"]
-                    st.text_input(label = "Please enter your preferred response template",
-                                  label_visibility="collapsed",
-                                  placeholder="Please enter your preferred response template",
-                                  value=response_template_input)
+                    if "response_template_other" in revisited_data and revisited_data["response_template_other"]:
+                        response_template_input = revisited_data["response_template_other"]
+                    response_template_other = st.text_input(label="Please enter your preferred response template",
+                                                            label_visibility="collapsed",
+                                                            placeholder="Please enter your preferred response template",
+                                                            value=response_template_input)
+                    revisited_data["response_template_other"] = response_template_other
 
                 # RESPONSE STYLE
                 response_style_options = ["Bullet points", "Continuous text", "Other"]
                 response_style_index = None
-                if "response_style" in participant_data and participant_data["response_style"] and participant_data["response_style"] in response_style_options:
-                    response_style_index = response_style_options.index(participant_data["response_style"])
+                if "response_style" in revisited_data and revisited_data["response_style"] and revisited_data["response_style"] in response_style_options:
+                    response_style_index = response_style_options.index(revisited_data["response_style"])
 
                 response_style = st.radio(label="**Response style**",
                                           options=response_style_options,
@@ -102,18 +146,19 @@ def main():
                                           horizontal=True)
                 if response_style == "Other":
                     response_style_input = ""
-                    if "response_style" in participant_data and participant_data["response_style"] and participant_data["response_style"] not in response_style_options:
-                        response_style_input = participant_data["response_style"]
-                    st.text_input(label="Preferred response style",
-                                  label_visibility="collapsed",
-                                  placeholder="Please enter your preferred response style",
-                                  value=response_style_input)
+                    if "response_style_other" in revisited_data and revisited_data["response_style_other"]:
+                        response_style_input = revisited_data["response_style_other"]
+                    response_style_other = st.text_input(label="Preferred response style",
+                                                         label_visibility="collapsed",
+                                                         placeholder="Please enter your preferred response style",
+                                                         value=response_style_input)
+                    revisited_data["response_style_other"] = response_style_other
 
                 # ROLE
                 role_options = ["Assistant", "Mentor", "None", "Other"]
                 role_index = None
-                if "role" in participant_data and participant_data["role"] and participant_data["role"] in role_options:
-                    role_index = role_options.index(participant_data["role"])
+                if "role" in revisited_data and revisited_data["role"] and revisited_data["role"] in role_options:
+                    role_index = role_options.index(revisited_data["role"])
                 role = st.radio(label="**Role that is taken on by the GenAI model**",
                                 options=role_options,
                                 key="role",
@@ -121,59 +166,106 @@ def main():
                                 horizontal=True)
                 if role == "Other":
                     role_input = ""
-                    if "role" in participant_data and participant_data["role"] and participant_data["role"] not in role_options:
-                        role_input = participant_data["role"]
-                    st.text_input(label="Preferred role",
-                                  label_visibility="collapsed",
-                                  placeholder="Please enter the preferred role",
-                                  value=role_input)
+                    if "role_other" in revisited_data and revisited_data["role_other"]:
+                        role_input = revisited_data["role_other"]
+                    role_other = st.text_input(label="Preferred role",
+                                               label_visibility="collapsed",
+                                               placeholder="Please enter the preferred role",
+                                               value=role_input)
+                    revisited_data["role_other"] = role_other
 
                 # RESPONSE LENGTH
                 response_length_options = ["Concise", "Short and comprehensive", "Detailed and comprehensive", "Others"]
                 response_length_index = None
-                if "response_length" in participant_data and participant_data["response_length"] and participant_data["response_length"] in response_length_options:
-                    response_length_index = response_length_options.index(participant_data["response_length"])
+                if "response_length" in revisited_data and revisited_data["response_length"] and revisited_data["response_length"] in response_length_options:
+                    response_length_index = response_length_options.index(revisited_data["response_length"])
                 response_length = st.radio(label="**Response length**",
                                            options=response_length_options,
                                            key="response_length",
                                            horizontal=True,
                                            index=response_length_index)
-                if response_length == "Others":
-                    if "response_length" in participant_data and participant_data["response_length"] and participant_data["response_length"] not in response_length_options:
-                        response_length_input = participant_data["response_length"]
-                    st.text_input(label="Preferred response length",
-                                  label_visibility="collapsed",
-                                  placeholder="Please enter the preferred response length",
-                                  value=response_length_input)
+                if response_length == "Other":
+                    response_length_input = ""
+                    if "response_length_other" in revisited_data and revisited_data["response_length_other"]:
+                        response_length_input = revisited_data["response_length_other"]
+                    response_length_other = st.text_input(label="Preferred response length",
+                                                          label_visibility="collapsed",
+                                                          placeholder="Please enter the preferred response length",
+                                                          value=response_length_input)
+                    revisited_data["response_length_other"] = response_length_other
 
                 # CODE ADJUSTMENT
                 code_adjustment_options = ["Provide the whole code", "Provide the whole code and highlight changed parts", "Only show adjusted code snippets", "Others"]
                 code_adjustment_index = None
-                if "code_adjustment" in participant_data and participant_data["code_adjustment"] and participant_data["code_adjustment"] in code_adjustment_options:
-                    code_adjustment_index = code_adjustment_options.index(participant_data["code_adjustment"])
+                if "code_adjustment" in revisited_data and revisited_data["code_adjustment"] and revisited_data["code_adjustment"] in code_adjustment_options:
+                    code_adjustment_index = code_adjustment_options.index(revisited_data["code_adjustment"])
                 code_adjustment = st.radio(label="**How do you prefer adjusted code to be presented?**",
                                            options=code_adjustment_options,
                                            key="code_adjustment",
                                            horizontal=True,
                                            index=code_adjustment_index)
-                if code_adjustment == "Others":
-                    if "code_adjustment" in participant_data and participant_data["code_adjustment"] and participant_data["code_adjustment"] not in code_adjustment_options:
-                        code_adjustment_input = participant_data["code_adjustment"]
-                    st.text_input(label="Preferred code adjustment style",
-                                  label_visibility="collapsed",
-                                  placeholder="Please enter the preferred code adjustment style",
-                                  value=code_adjustment_input)
+                if code_adjustment == "Other":
+                    code_adjustment_input = ""
+                    if "code_adjustment_other" in revisited_data and revisited_data["code_adjustment_other"]:
+                        code_adjustment_input = revisited_data["code_adjustment_other"]
+                    code_adjustment_other = st.text_input(label="Preferred code adjustment style",
+                                                          label_visibility="collapsed",
+                                                          placeholder="Please enter the preferred code adjustment style",
+                                                          value=code_adjustment_input)
+                    revisited_data["code_adjustment_other"] = code_adjustment_other
 
                 if st.button("Save settings"):
+                    if "chosen_lang" not in revisited_data and chosen_language:
+                        revisited_data["chosen_lang"] = chosen_language
+                        revisited_data["chosen_lang_rep"] = chosen_language
+                    elif "chosen_lang_rep" in revisited_data:
+                        revisited_data["chosen_lang_rep"] = str(
+                            revisited_data["chosen_lang_rep"]) + " -> " + chosen_language
+                    revisited_data["chosen_lang"] = chosen_language
+                    revisited_data["proficiency"] = proficiency
+                    revisited_data["response_template"] = response_template
+                    revisited_data["response_style"] = response_style
+                    revisited_data["role"] = role
+                    revisited_data["response_length"] = response_length
+                    revisited_data["code_adjustment"] = code_adjustment
+
+                    if response_template == "Other" and response_template_other:
+                        response_template = response_template_other
+                    if response_style == "Other" and response_style_other:
+                        response_style = response_style_other
+                    if role == "Other" and role_other:
+                        role = role_other
+                    if response_length == "Other" and response_length_other:
+                        response_length = response_length_other
+                    if code_adjustment == "Other" and code_adjustment_other:
+                        code_adjustment = code_adjustment_other
+
                     st.session_state["system_prompt"] = get_prompted_assistant_without_task(
                         role=role,
-                        proficiency_level=participant_data["python_proficiency"],
+                        proficiency_level=proficiency,
+                        lang=chosen_language,
                         response_style=response_style,
                         response_template=response_template,
                         response_length=response_length,
                         code_correction_style=code_adjustment)
 
-        initialize_session_state(assigned_group, role, participant_data["python_proficiency"], response_style, response_template, response_length, code_adjustment)
+                    st.success("Your settings have been saved.", icon="✅")
+                    write_json(REVISITED_FILE_PATH, participant_id, revisited_data)
+
+        if response_template == "Other" and response_template_other:
+            response_template = response_template_other
+        if response_style == "Other" and response_style_other:
+            response_style = response_style_other
+        if role == "Other" and role_other:
+            role = role_other
+        if response_length == "Other" and response_length_other:
+            response_length = response_length_other
+        if code_adjustment == "Other" and code_adjustment_other:
+            code_adjustment = code_adjustment_other
+        if not proficiency:
+            proficiency = "unknown proficiency level"
+
+        initialize_session_state(assigned_group, role, chosen_language, proficiency, response_style, response_template, response_length, code_adjustment)
         chat_template = ChatPromptTemplate.from_messages(
             [
                 ("system", st.session_state["system_prompt"]),
@@ -183,7 +275,7 @@ def main():
         )
 
         if "gen_messages" not in st.session_state:
-            if "message_generate" not in participant_data and st.session_state["initial_user_message"]:
+            if "message_generate" not in revisited_data and st.session_state["initial_user_message"]:
                 st.session_state["gen_messages"] = [{
                     "role": "assistant",
                     "content": st.session_state["initial_user_message"]
@@ -191,7 +283,7 @@ def main():
             elif not st.session_state["initial_user_message"] or st.session_state["initial_user_message"] == "":
                 st.session_state["gen_messages"] = []
             else:
-                st.session_state["gen_messages"] = participant_data["message_generate"]
+                st.session_state["gen_messages"] = revisited_data["message_generate"]
 
         with st.expander(":gray[Click here to adjust the chat's and the solution's container height [px]]",
                          expanded=False):

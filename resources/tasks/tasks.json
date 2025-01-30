@@ -1,6 +1,6 @@
 {
   "easy": {
-    "description": "You are given an integer array `nums` of length `n`.\n\nA partition is defined as an index `i` where `0 <= i < n - 1`, splitting the array into two **non-empty** subarrays such that:\n\n- Left subarray contains indices `[0, i]`.\n- Right subarray contains indices `[i + 1, n - 1]`.\nReturn the number of **partitions** where the **difference** between the **sum** of the left and right subarrays is **even**.",
+    "description": "You are given an integer array `nums` of length `n`.\n\nA partition is defined as an index `i` where `0 <= i < n - 1`, splitting the array into two **non-empty** subarrays such that:\n\n- Left subarray contains indices `[0, i]`.\n- Right subarray contains indices `[i + 1, n - 1]`.\n\nReturn the number of **partitions** where the **difference** between the **sum** of the left and right subarrays is **even**.",
     "examples": [
       {
         "title": "Example 1",
@@ -16,13 +16,16 @@
       },
        {
         "title": "Example 3",
-        "input": "`nums = [2,4,6,8]`",
+        "input": "nums = [2,4,6,8]",
         "output": "3",
         "explanation": "All partitions result in an even sum difference."
       }
     ],
     "additional_info": "`2 <= n == nums.length <= 100`\n`1 <= nums[i] <= 100`",
-    "template": "class Solution:\n    def countPartitions(self, nums: List[int]) -> int:\n        # CODE",
+    "template": {
+      "python": "class Solution:\n    def countPartitions(self, nums: List[int]) -> int:\n        # CODE",
+      "java": "class Solution {\n    public int countPartitions(int[] nums) {\n        // CODE\n    }\n}"
+    },
     "hints": [
       {
         "title": "Hint 1",
@@ -31,7 +34,7 @@
     ]
   },
   "medium": {
-    "description": "You are given an array `nums` of length `n`. You are also given an integer `k`.\n\nYou perform the following operation on `nums` *+once**:\n\nSelect a *subarray* `nums[i..j]` where `0 <= i <= j <= n - 1`.\nSelect an integer `x` and add `x` to all the elements in `nums[i..j]`.\nFind the **maximum** frequency of the value `k` after the operation.",
+    "description": "You are given an array `nums` of length `n`. You are also given an integer `k`.\n\nYou perform the following operation on `nums` **once**:\n\nSelect a *subarray* `nums[i..j]` where `0 <= i <= j <= n - 1`.\nSelect an integer `x` and add `x` to all the elements in `nums[i..j]`.\n\nFind the **maximum** frequency of the value `k` after the operation.",
     "examples": [
       {
         "title": "Example 1",
@@ -47,7 +50,10 @@
       }
     ],
     "additional_info": "`1 <= n == nums.length <= 105`\n`1 <= nums[i] <= 50`\n`1 <= k <= 50`",
-    "template": "class Solution:\n    def maxFrequency(self, nums: List[int], k: int) -> int:\n     #CODE",
+    "template": {
+      "python": "class Solution:\n    def maxFrequency(self, nums: List[int], k: int) -> int:\n     #CODE",
+      "java": "class Solution {\n    public int maxFrequency(int[] nums, int k) {\n        // CODE\n    }\n}"
+    },
     "hints": [
       {
         "title": "Hint 1",
@@ -82,7 +88,10 @@
       }
     ],
     "additional_info": "`1 <= words.length <= 256`\n`words[i].length == 2`\nAll strings in `words` will altogether be composed of no more than 16 unique lowercase letters.\nAll strings in `words` are unique.",
-    "template": "class Solution:\n    def supersequences(self, words: List[str]) -> List[List[int]]:\n     #CODE",
+    "template": {
+      "python": "class Solution:\n    def supersequences(self, words: List[str]) -> List[List[int]]:\n        # CODE",
+      "java": "class Solution {\n    public List<List<Integer>> supersequences(String[] words) {\n        // CODE\n    }\n}"
+    },
     "hints": [
       {
         "title": "Hint 1",

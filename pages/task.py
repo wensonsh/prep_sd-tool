@@ -4,6 +4,7 @@ import random
 import streamlit as st
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from streamlit.components.v1 import html
 from streamlit_ace import st_ace
 
 from pages.config.gen_ai_assistant import get_prompted_assistant, get_default_initial_user_message, get_temperature
@@ -16,6 +17,79 @@ PAGE_TITLE = "Collaborating with your GenAI tool"
 ERROR_MSG = "Your solution is empty. Please submit a solution."
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
+# JavaScript Timer
+timer_script = """
+<script>
+    let startTime;  // The time when the timer starts
+    let elapsedTime = 0;  // Time elapsed in milliseconds
+    let timerInterval;  // Interval for updating the timer
+    let isPaused = false;  // Tracks whether the timer is paused
+
+    function startTimer() {
+        if (!startTime) {
+            startTime = Date.now();  // Record the start time
+        } else {
+            startTime = Date.now() - elapsedTime;  // Adjust for paused duration
+        }
+        isPaused = false;
+        document.getElementById('pause-btn').style.display = 'inline-block';
+        document.getElementById('resume-btn').style.display = 'none';
+
+        // Start updating the timer every second
+        timerInterval = setInterval(updateTimer, 1000);
+
+        // Set a timeout for the popup after 15 minutes (900000 ms)
+        setTimeout(function() {
+            alert("⏰ 15 minutes have passed! Please consider submitting your solution soon.");
+        }, 900000); // 900000 ms = 15 minutes
+    }
+
+    function pauseTimer() {
+        if (!isPaused) {
+            clearInterval(timerInterval);  // Stop updating the timer
+            elapsedTime = Date.now() - startTime;  // Calculate elapsed time so far
+            isPaused = true;
+            document.getElementById('pause-btn').style.display = 'none';
+            document.getElementById('resume-btn').style.display = 'inline-block';
+        }
+    }
+
+    function resumeTimer() {
+        if (isPaused) {
+            startTimer();  // Resume the timer
+        }
+    }
+
+    function updateTimer() {
+        const currentTime = Date.now();
+        const totalElapsedTime = currentTime - startTime;
+        const seconds = Math.floor((totalElapsedTime / 1000) % 60);
+        const minutes = Math.floor((totalElapsedTime / (1000 * 60)) % 60);
+
+        document.getElementById('timer-display').textContent =
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        // Save elapsed time to a hidden input field for Python access
+        document.getElementById('elapsed-time').value = `${minutes}:${seconds}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        startTimer();  // Automatically start the timer when the page loads
+        document.getElementById('pause-btn').addEventListener('click', pauseTimer);
+        document.getElementById('resume-btn').addEventListener('click', resumeTimer);
+    });
+</script>
+
+<div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">
+    Elapsed Time: <span id="timer-display">00:00</span>
+</div>
+<input type="hidden" id="elapsed-time" name="elapsed-time" value="00:00">
+<button id="pause-btn" style="background-color: #2A2F33; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">⏸️ Pause</button>
+<button id="resume-btn" style="background-color: #397AB3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: none;">▶️ Resume</button>
+"""
+
+def clear_gen_messages():
+    st.session_state["gen_messages"] = []
 
 def load_participant_data(participant_id):
     try:
@@ -53,6 +127,9 @@ def initialize_session_state(group, difficulty, selected_role, participant_profi
     if "temperature" not in st.session_state:
         st.session_state["temperature"] = get_temperature()
 
+def update_system_prompt():
+    st.session_state["user_system_prompt"] = st.session_state["system_prompt_text_area"]
+
 
 def main():
     st.set_page_config(page_title=PAGE_TITLE, layout="wide", initial_sidebar_state="expanded", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
@@ -62,6 +139,7 @@ def main():
 
     participant_id = st.session_state["participant_id"]
     data = load_participant_data(participant_id)
+    st.session_state["user_system_prompt"] = ""
 
     if "exp_finished" in data and data["exp_finished"]:
         st.switch_page("pages/gen_ai_tool.py")
@@ -105,7 +183,35 @@ def main():
         response_length = None
         code_adjustment = None
         if assigned_group == "group_tailored":
-            with st.expander("***Interaction and Response Settings***", expanded=False):
+            task = get_task_for_prompt(task_difficulty) + "\n\n" + get_task_template_for_prompt(difficulty=task_difficulty,
+                                                                                                chosen_language=chosen_language)
+            if "session_state_initialized" in st.session_state and st.session_state["session_state_initialized"]:
+                st.session_state["session_state_initialized"] = True
+            else:
+                st.session_state["session_state_initialized"] = False
+
+            with st.expander("**Interaction and Response Settings**", expanded=False):
+                if st.button("Reset settings",
+                             type="tertiary",
+                             help="This will reset your interaction and response settings to default",
+                             icon=":material/reset_settings:"):
+                    st.session_state["system_prompt"] = get_prompted_assistant(
+                        role=None,
+                        proficiency_level=proficiency_in_chosen_lang,
+                        lang=chosen_language,
+                        response_style=None,
+                        response_template=None,
+                        response_length=None,
+                        code_correction_style=None,
+                        task = task)
+                    st.success("Your settings have been reset.", icon="⏮️")
+                    data["role"] = None
+                    data["response_style"] = None
+                    data["response_template"] = None
+                    data["response_length"] = None
+                    data["code_adjustment"] = None
+                    save_participant_data(participant_id, data)
+
                 # CHOOSE RESPONSE TEMPLATE
                 response_template_options = ["Code only", "Step-by-step instructions + code block", "High-level overview + code block + explanation", "Other"]
                 response_template_index = None
@@ -204,7 +310,7 @@ def main():
 
                 if st.button("Save settings"):
                     data["settings_changed_count"] = data.get("settings_changed_count", 0) + 1
-                    task = get_task_for_prompt(task_difficulty) + "\n\n" + get_task_template_for_prompt(task_difficulty, chosen_language)
+
                     data["response_template"] = response_template
                     if response_template == "Other" and response_template_other:
                         data["response_template_other"] = response_template_other
@@ -240,16 +346,48 @@ def main():
                     else:
                         data["system_prompt"] = st.session_state["system_prompt"]
                     save_participant_data(participant_id, data)
+                    st.success("Settings updated successfully.")
 
-        initialize_session_state(group=assigned_group,
-                                 difficulty=task_difficulty,
-                                 selected_role=role,
-                                 participant_proficiency_level=proficiency_in_chosen_lang,
-                                 selected_response_style=response_style,
-                                 selected_response_template=response_template,
-                                 selected_response_length=response_length,
-                                 selected_code_correction_style=code_adjustment,
-                                 lang=chosen_language)
+            button_save_prompt_clicked = False
+            if "user_system_prompt" in st.session_state and st.session_state["user_system_prompt"]:
+                user_system_prompt_value = st.session_state["user_system_prompt"]
+            else:
+                user_system_prompt_value = st.session_state["system_prompt"]
+
+            with st.expander("**Prompt Editor**", expanded=False):
+                user_sys_prompt = st.text_area("Current System Prompt for the GenAI model",
+                                               value=user_system_prompt_value,
+                                               height=400,
+                                               key="system_prompt_text_area",
+                                               on_change=update_system_prompt)
+                if st.button("Save prompt"):
+                    button_save_prompt_clicked = True
+                    st.session_state["system_prompt"] = user_sys_prompt
+                    data["user_system_prompt_changed_count"] = data.get("user_system_prompt_changed_count", 0) + 1
+                    if "user_system_prompt" in data and data["user_system_prompt"]:
+                        data["user_system_prompt"] = data["user_system_prompt"] + "   ->  " + user_sys_prompt
+                    else:
+                        data["user_system_prompt"] = user_sys_prompt
+                    save_participant_data(participant_id, data)
+                    st.success("Prompt updated successfully.")
+
+            if st.session_state["user_system_prompt"] and button_save_prompt_clicked:
+                # only if save prompt button was clicked, save and update the prompt for the model
+                st.session_state["system_prompt"] = st.session_state["user_system_prompt"]
+
+
+        if "session_state_initialized" not in st.session_state or not st.session_state["session_state_initialized"]:
+            initialize_session_state(group=assigned_group,
+                                     difficulty=task_difficulty,
+                                     selected_role=role,
+                                     participant_proficiency_level=proficiency_in_chosen_lang,
+                                     selected_response_style=response_style,
+                                     selected_response_template=response_template,
+                                     selected_response_length=response_length,
+                                     selected_code_correction_style=code_adjustment,
+                                     lang=chosen_language)
+            st.session_state["session_state_initialized"] = True
+
         chat_template = ChatPromptTemplate.from_messages(
             [
                 ("system", st.session_state["system_prompt"]),
@@ -265,14 +403,33 @@ def main():
                     "content": st.session_state["initial_user_message"]
                 }]
             elif not st.session_state["initial_user_message"] or st.session_state["initial_user_message"] == "":
-                st.session_state["gen_messages"] = []
+                clear_gen_messages()
             else:
                 st.session_state["gen_messages"] = data["message_generate"]
 
-        with st.expander(":gray[Click here to adjust the chat's and the solution's container height [px]]",
-                         expanded=False):
-            container_height = st.slider(label="Choose container height in pixels", label_visibility="hidden",
-                                         min_value=200, max_value=800, value=400)
+            # Update live_message_generate when a new conversation is started
+            data["live_message_generate"] = str(st.session_state["gen_messages"])
+            save_participant_data(participant_id, data)
+
+        if data["assigned_group"] == "group_tailored":
+            with st.expander(":gray[Click here to adjust the chat's and the solution's container height [px]]",
+                             expanded=False):
+                container_height = st.slider(
+                    label="Choose container height in pixels",
+                    label_visibility="hidden",
+                    min_value=200,
+                    max_value=800,
+                    value=400,
+                    on_change=lambda: (
+                        data.update(
+                            {"container_height_adjusted_count": data.get("container_height_adjusted_count", 0) + 1}),
+                        save_participant_data(participant_id, data)
+                    )
+                )
+
+                save_participant_data(participant_id, data)
+        else:
+            container_height = 500
         messages_container = st.container(height=container_height)
 
         for msg in st.session_state.gen_messages:
@@ -298,15 +455,79 @@ def main():
             st.session_state.gen_messages.append({"role": "assistant", "content": msg})
             messages_container.chat_message("assistant").write(msg)
 
-            if "live_message_generate" in data:
-                data["live_message_generate"] = str(data["live_message_generate"]) + " NEW ANSWER    =>       " + str(
-                    st.session_state.gen_messages)
-            else:
-                data["live_message_generate"] = str(st.session_state.gen_messages)
-            save_participant_data(participant_id, data)
+        st.divider()
+        col_reset_button1, col_reset_button2 = st.columns([2, 1])
+        if data["assigned_group"] == "group_tailored":
+            with col_reset_button1:
+                if st.button(label="Reset Conversation (with initial message)",
+                             help="This will start the conversation but keep the initial message",
+                             icon=":material/undo:"):
+                    # save messages in data
+                    if "live_message_generate" in data:
+                        data["live_message_generate"] += " " + str(st.session_state.gen_messages)
+                    else:
+                        data["live_message_generate"] = str(st.session_state.gen_messages)
+                    save_participant_data(participant_id, data)
+
+                    st.session_state["gen_messages"] = [{
+                        "role": "assistant",
+                        "content": st.session_state["initial_user_message"]
+                    }]
+                    if "live_message_generate" in data:
+                        data["live_message_generate"] += " NEW ANSWER    =>       "
+                    else:
+                        data["live_message_generate"] = ""
+                    data["reset_conversation_count"] = data.get("reset_conversation_count", 0) + 1
+                    save_participant_data(participant_id, data)
+                    st.rerun()
+            with col_reset_button2:
+                if st.button(label="Clear all messages",
+                             help="This will clear all messages in the chat and start a new conversation",
+                             icon=":material/delete:"):
+                    # save messages in data
+                    if "live_message_generate" in data:
+                        data["live_message_generate"] += " " + str(st.session_state.gen_messages)
+                    else:
+                        data["live_message_generate"] = str(st.session_state.gen_messages)
+                    save_participant_data(participant_id, data)
+
+                    clear_gen_messages()
+                    if "live_message_generate" in data:
+                        data["live_message_generate"] += " NEW ANSWER    =>       "
+                    else:
+                        data["live_message_generate"] = ""
+                    data["clear_all_messages_count"] = data.get("clear_all_messages_count", 0) + 1
+                    save_participant_data(participant_id, data)
+                    st.rerun()
+        else:
+            if st.button("Reset and start new conversation",
+                         help="This will clear all messages in the chat and start a new conversation",
+                         icon=":material/restart_alt:"):
+                # save messages in data
+                if "live_message_generate" in data:
+                    data["live_message_generate"] += " " + str(st.session_state.gen_messages)
+                else:
+                    data["live_message_generate"] = str(st.session_state.gen_messages)
+                save_participant_data(participant_id, data)
+
+                clear_gen_messages()
+                if "live_message_generate" in data:
+                    data["live_message_generate"] += " NEW ANSWER    =>       "
+                else:
+                    data["live_message_generate"] = ""
+                data["clear_all_messages_count"] = data.get("clear_all_messages_count", 0) + 1
+                save_participant_data(participant_id, data)
+                st.rerun()
 
     with right:
-        st.markdown("**Your Solution:**")
+        # TIMER
+        show_timer = st.toggle("Show Timer", value=True)
+        if show_timer:
+            st.info(
+                "A timer has been added to help you monitor the time spent on this task, as the whole experiment is designed to be completed within 30 minutes. However, please do not worry if you cannot submit a complete or correct solution within this timeframe.")
+            html(timer_script, height=100)
+
+        st.markdown(f"#### Your Solution:")
         st.text("")
         solution_value = data.get("solution_generate", "")
         solution = st_ace(
@@ -323,20 +544,26 @@ def main():
 
         with slider_middle:
             perceived_task_difficulty_values = ["Easy", "Medium", "Hard"]
-            perceived_task_difficulty_value = None
+            perceived_task_difficulty_index = None
             if "perceived_task_difficulty" in data and data['perceived_task_difficulty']:
-                perceived_task_difficulty_value = data["perceived_task_difficulty"]
-            perceived_task_difficulty = st.select_slider(
+                perceived_task_difficulty_index = perceived_task_difficulty_values.index(data['perceived_task_difficulty'])
+            perceived_task_difficulty = st.radio(
                 label="I perceived this task as ...",
                 options=perceived_task_difficulty_values,
-                value=perceived_task_difficulty_value
-            )
+                index=perceived_task_difficulty_index,
+                horizontal=True)
             data["perceived_task_difficulty"] = perceived_task_difficulty
 
         if st.button("Submit and continue →", type="primary", use_container_width=True):
             if solution is None or len(solution) == 0:
                 st.error(ERROR_MSG)
             else:
+                # save messages in data
+                if "live_message_generate" in data:
+                    data["live_message_generate"] += " " + str(st.session_state.gen_messages)
+                else:
+                    data["live_message_generate"] = str(st.session_state.gen_messages)
+                # save solution in data
                 if "solution_generate" not in data:
                     data["solution_generate"] = str(solution)
                     data["live_solution_generate"] = str(solution)

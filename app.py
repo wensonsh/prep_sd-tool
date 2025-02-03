@@ -37,7 +37,7 @@ if st.session_state["current_page"] == "welcome":
     st.markdown(f"***Your participation is entirely voluntary, and you may withdraw at any time. "
                 f"All the information that you provide will be kept confidential and will only be used for research purposes. "
                 f"Your data will be processed and stored anonymously."
-                f"\nYou will interact with a GenAI tool that is based on OpenAI's GPT-4o model (see https://platform.openai.com/docs/models for more information). Please don't share any sensitive information while chatting with the GenAI tool that you do not wish to be processed by OpenAI. By proceeding, you consent to participate under these terms.***")
+                f"\nYou will interact with a GenAI tool that is based on OpenAI's GPT-4o model (see https://platform.openai.com/docs/models for more information). While chatting with the GenAI tool, please do not share any sensitive information that you do not wish to be processed by OpenAI. By proceeding, you consent to participate under these terms.***")
 
     st.empty()
 

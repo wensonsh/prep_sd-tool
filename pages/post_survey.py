@@ -168,11 +168,15 @@ rq2= st.radio(label="**The GenAI tool had a positive impact on my ability to com
               horizontal=True)
 
 st.text("")
+st.markdown("**The GenAI tool was able to aid me in completing the task successfully.**")
 RQ3_index = None
 if "RQ3" in data and data['RQ3']:
     RQ3_index = BASIC_LIKERT_OPTIONS.index(data["RQ3"])
-rq3 = st.radio(label="**The GenAI tool was able to aid me in completing the task successfully.**", options=BASIC_LIKERT_OPTIONS, index=RQ3_index,
-    horizontal=True)
+rq3 = st.radio(label="**The GenAI tool was able to aid me in completing the task successfully.**",
+               label_visibility="collapsed",
+               options=BASIC_LIKERT_OPTIONS,
+               index=RQ3_index,
+               horizontal=True)
 
 st.divider()
 #LTUI
@@ -220,10 +224,19 @@ ltui3 = st.radio(label=f"**{LTUI3_label}**",
                  horizontal=True)
 
 st.divider()
-st.markdown(f"**Did you use any other tools or resources (e.g. Google) while solving the task? If yes, please specify: (optional)**")
+st.markdown(f"**Did you use any other tools or resources (e.g. Google) while solving the task? If yes, please specify: (optional)**", unsafe_allow_html=True)
 other_resources = st.text_input(label="**Did you use any other tools or resources (e.g. Google) while solving the task? If yes, please specify:**",
                             label_visibility="collapsed",
                             placeholder="Please specify the tools or resources you used.")
+st.markdown(f"**Is there anything you especially <u>liked</u> about the GenAI tool that you were given? If yes, please specify: (optional)**", unsafe_allow_html=True)
+liked_features = st.text_input(label="**Is there anything you especially liked about the GenAI tool that you were given? If yes, please specify:**",
+                            label_visibility="collapsed",
+                            placeholder="Please specify what you liked about the GenAI tool.")
+
+st.markdown(f"**Is there anything you especially <u>disliked</u> about the GenAI tool that you were given? If yes, please specify: (optional)**", unsafe_allow_html=True)
+disliked_features = st.text_input(label="**Is there anything you especially disliked about the GenAI tool that you were given? If yes, please specify:**",
+                            label_visibility="collapsed",
+                            placeholder="Please specify what you disliked about the GenAI tool.")
 
 st.markdown(f"**Is there anything else you would like to share? (optional)**")
 others_shared = st.text_area(label="Is there anything else you would like to share?",

@@ -27,10 +27,17 @@ def display_task(difficulty, chosen_language):
         if chosen_language not in task['template']:
             chosen_language = "python"
         st.code(task['template'][chosen_language], language=chosen_language, wrap_lines=True)
+        display_hints(task['hints'])
         st.divider()
         st.markdown("***Sourced from https://leetcode.com/***")
     else:
         st.error("Invalid task difficulty")
+
+def display_hints(hints):
+    with st.expander("💡 See/hide hints", expanded=False):
+        for hint in hints:
+            st.markdown(f"### {hint['title']}")
+            st.markdown(f"\n{hint['description']}")
 
 def display_examples(examples):
     with st.expander("📝 See/hide examples", expanded=True):

@@ -86,7 +86,6 @@ def main():
                     revisited_data["response_template"] = None
                     revisited_data["response_length"] = None
                     revisited_data["code_adjustment"] = None
-                    revisited_data["proficiency_level_for_chosen_lang"] = None
                     write_json(REVISITED_FILE_PATH, participant_id, revisited_data)
 
 

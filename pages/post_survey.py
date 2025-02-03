@@ -293,6 +293,11 @@ if right.button("Submit", key="submit", type="primary"):
             data['others_shared'] = others_shared
         if other_resources:
             data['other_resources'] = other_resources
+        if liked_features:
+            data['liked_features'] = liked_features
+        if disliked_features:
+            data['disliked_features'] = disliked_features
+
         data["next_page"] = "finish.py"
         data["exp_finished"] = True
         data["end_time_general"] = get_current_time()

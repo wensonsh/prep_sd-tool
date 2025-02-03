@@ -4,9 +4,9 @@ import streamlit as st
 from streamlit import session_state
 
 from pages.config.gen_ai_assistant import get_prompted_assistant
+from pages.helper.file_helper import write_json
 from pages.helper.navigation import forward, home, get_header
 from pages.helper.random_assignments import assign_to_group
-from pages.task import save_participant_data
 from pages.tasks.task_template import get_task_for_prompt, get_task_template_for_prompt
 
 st.set_page_config(page_title="Procedure", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
@@ -224,7 +224,7 @@ def settings():
             task=task)
         if "system_prompt" in st.session_state:
             data["system_prompt"] = st.session_state["system_prompt"]
-        save_participant_data(participant_id, data)
+        write_json("data/participants/", participant_id, data)
         forward("pages/task.py", True, False, data, participant_id)
 
 left, middle, right = st.columns([12,8,4])
@@ -232,5 +232,5 @@ if right.button("Continue →", key="init_continue", type="primary"):
     if session_state["assigned_group"] == "group_tailored":
         settings()
     else:
-        save_participant_data(participant_id, data)
+        write_json("data/participants/", participant_id, data)
         forward("pages/task.py", True, False, data, participant_id)

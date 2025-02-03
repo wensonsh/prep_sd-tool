@@ -19,9 +19,9 @@ def get_prompted_assistant(role, proficiency_level, lang, response_style, respon
         docstrings = "javadoc"
 
     if role is None:
-        text_role = f"You are a GenAI tool for a {proficiency_level} {lang} developer who is conducting an experiment in which they have to solve a programming task. "
+        text_role = f"You are a GenAI tool for a {proficiency_level} {lang} developer who is conducting an experiment in which they have to solve a programming task."
     else:
-        text_role = f"You are taking the role of a {role} for a {proficiency_level} {lang} software developer who is conducting an experiment with your assistance."
+        text_role = f"You are taking the role of a {role} for a {proficiency_level} {lang} software developer who is conducting an experiment which involves using you as GenAI tool."
     text_response_template = ""
     if response_template == "Code only":
         response_template = RESPONSE_STYLE_TEMPLATE_A
@@ -34,7 +34,7 @@ def get_prompted_assistant(role, proficiency_level, lang, response_style, respon
 
     text_response_style = ""
     if response_style == "Continuous text":
-        text_response_style = "While interacting with the software developer, your responses should be as Continuous text. Avoid any bullet points or lists in that case"
+        text_response_style = "While interacting with the software developer, your responses should be as Continuous text. Avoid any bullet points or lists in that case."
     elif response_style and response_style != "":
         text_response_style = f"While interacting with the software developer, your responses should be as {response_style}."
 
@@ -53,9 +53,10 @@ def get_prompted_assistant(role, proficiency_level, lang, response_style, respon
                      f"If the developer asks you to provide code, do so. If you would like to include code in your answers, without the developer explicitly asking for code before, ask the developer first, if you should provide it. "
                      f"{text_response_template} "
                      f"{text_code_correction_style} "
-                     f"Here is the description of the current task of the software developer:\n\n{task}.\n\n\n"
-                     f"The developer can see that same task description and all the requirements (except for the hints) in the sidebar on the experiment page that can be opened and closed. "
-                     f"Consider all the task's requirements and constraints, if there are any, when you are asked for help.")
+                     f"Here are the description, examples, additional information, hints, and the task template of the current task of the software developer:\n\n{task}.\n\n\n"
+                     f"The developer can see that same task description and all the requirements in the sidebar on the experiment page that can be opened and closed. "
+                     f"Consider all the task's requirements and constraints when you are asked for help."
+                     f"If the user asks you something off-topic, gently redirect them to the task.")
     return system_prompt
 
 
@@ -79,7 +80,7 @@ def get_prompted_assistant_without_task(role, proficiency_level, lang, response_
 
     text_response_style = ""
     if response_style == "Continuous text":
-        text_response_style = "While interacting with the software developer, your responses should be as Continuous text. Avoid any bullet points or lists in that case"
+        text_response_style = "While interacting with the software developer, your responses should be as Continuous text. Avoid any bullet points or lists in that case."
     elif response_style and response_style != "":
         text_response_style = f"While interacting with the software developer, your responses should be as {response_style}."
 

@@ -12,7 +12,6 @@ FEEDBACK_FILE_PATH = "data/feedback/"
 
 # go to start if no session state
 if 'participant_id' not in st.session_state:
-    print("NOT IN SESS")
     home()
 participant_id = st.session_state["participant_id"]
 

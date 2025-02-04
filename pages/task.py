@@ -9,9 +9,6 @@ from streamlit_ace import st_ace
 
 from pages.config.gen_ai_assistant import get_prompted_assistant, get_default_initial_user_message, get_temperature
 from pages.helper.navigation import forward, home, get_header
-from pages.helper.task_test_easy import test_solution_easy
-from pages.helper.task_test_hard import test_solution_hard
-from pages.helper.task_test_medium import test_solution_medium
 from pages.tasks.task_template import display_task, get_task_for_prompt, get_task_template_for_prompt
 
 # Constants
@@ -543,17 +540,6 @@ def main():
             language=chosen_language.lower(),
             wrap=True
         )
-
-        if st.button("Test solution", key="test_solution", icon=":material/assessment:"):
-            try:
-                if task_difficulty == "easy":
-                    test_solution_easy(solution)
-                elif task_difficulty == "medium":
-                    test_solution_medium(solution)
-                elif task_difficulty == "hard":
-                    test_solution_hard(solution)
-            except Exception as e:
-                st.error(f"An error occurred during testing. Please check your solution and try again.")
 
         slider_left, slider_middle, slider_right = st.columns([1, 20, 1], gap="small")
 

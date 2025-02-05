@@ -60,7 +60,7 @@ def main():
     middle, right = st.columns([4, 1], gap="small")
     with middle:
         st.warning(
-            "Please note that your data will be processed by OpenAI, as this GenAI tool utilizes OpenAI's gpt-4o model. Avoid entering any personal or sensitive information.\n\nThe developers of this tool do not take any responsibility for the data entered or processed.")
+            "Please note that your data will be processed by OpenAI, as this GenAI tool utilizes OpenAI's gpt-4o model. Avoid entering any information that you do not wish to be processed by OpenAI.\n\nThe developers of this tool do not take any responsibility for the data entered or processed.")
         role = None
         response_style = None
         response_template = None

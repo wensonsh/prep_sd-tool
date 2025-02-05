@@ -143,5 +143,25 @@
       "id":"WSTaHa",
       "group":"group_tailored",
       "task":"hard"
+   },
+   {
+      "id":"TeTaE1",
+      "group":"group_tailored",
+      "task":"easy"
+   },
+   {
+      "id":"TeTaE2",
+      "group":"group_tailored",
+      "task":"easy"
+   },
+   {
+      "id":"TeTaE3",
+      "group":"group_tailored",
+      "task":"easy"
+   },
+   {
+      "id":"TeTaE4",
+      "group":"group_tailored",
+      "task":"easy"
    }
 ]

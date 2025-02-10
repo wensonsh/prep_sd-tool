@@ -131,6 +131,13 @@ def update_system_prompt():
     st.session_state["user_system_prompt"] = st.session_state["system_prompt_text_area"]
 
 
+def write_convo_version(data):
+    data["live_message_generate"].extend(st.session_state.gen_messages)
+    data["new_convo_count"] = data.get("new_convo_count", 0) + 1
+    version_number = data["new_convo_count"]
+    data[f"live_message_generate_{version_number}"] = st.session_state.gen_messages
+
+
 def main():
     st.set_page_config(page_title=PAGE_TITLE, layout="wide", initial_sidebar_state="expanded", menu_items={'Get Help': 'mailto:wendi.shu@stud.tu-darmstadt.de'})
 
@@ -146,6 +153,10 @@ def main():
 
     get_header(3, "pages/procedure.py", False, False, data, participant_id)
     st.title(PAGE_TITLE)
+
+    # Initialize live_message_generate as a list
+    if "live_message_generate" not in data:
+        data["live_message_generate"] = []
 
     middle, right = st.columns([4, 3], gap="small")
 
@@ -408,7 +419,7 @@ def main():
                 st.session_state["gen_messages"] = data["message_generate"]
 
             # Update live_message_generate when a new conversation is started
-            data["live_message_generate"] = str(st.session_state["gen_messages"])
+            data["live_message_generate"].extend(st.session_state.gen_messages)
             save_participant_data(participant_id, data)
 
         if data["assigned_group"] == "group_tailored":
@@ -463,20 +474,14 @@ def main():
                              help="This will start the conversation but keep the initial message",
                              icon=":material/undo:"):
                     # save messages in data
-                    if "live_message_generate" in data:
-                        data["live_message_generate"] += " " + str(st.session_state.gen_messages)
-                    else:
-                        data["live_message_generate"] = str(st.session_state.gen_messages)
-                    save_participant_data(participant_id, data)
+                    write_convo_version(data)
 
                     st.session_state["gen_messages"] = [{
                         "role": "assistant",
                         "content": st.session_state["initial_user_message"]
                     }]
-                    if "live_message_generate" in data:
-                        data["live_message_generate"] += " NEW ANSWER    =>       "
-                    else:
-                        data["live_message_generate"] = ""
+                    data["live_message_generate"].append("NEW CONVO =>")
+                    data["live_message_generate"].append(st.session_state.gen_messages)
                     data["reset_conversation_count"] = data.get("reset_conversation_count", 0) + 1
                     save_participant_data(participant_id, data)
                     st.rerun()
@@ -485,17 +490,11 @@ def main():
                              help="This will clear all messages in the chat and start a new conversation",
                              icon=":material/delete:"):
                     # save messages in data
-                    if "live_message_generate" in data:
-                        data["live_message_generate"] += " " + str(st.session_state.gen_messages)
-                    else:
-                        data["live_message_generate"] = str(st.session_state.gen_messages)
-                    save_participant_data(participant_id, data)
+                    write_convo_version(data)
 
                     clear_gen_messages()
-                    if "live_message_generate" in data:
-                        data["live_message_generate"] += " NEW ANSWER    =>       "
-                    else:
-                        data["live_message_generate"] = ""
+                    data["live_message_generate"].extend(st.session_state.gen_messages)
+
                     data["clear_all_messages_count"] = data.get("clear_all_messages_count", 0) + 1
                     save_participant_data(participant_id, data)
                     st.rerun()
@@ -504,17 +503,9 @@ def main():
                          help="This will clear all messages in the chat and start a new conversation",
                          icon=":material/restart_alt:"):
                 # save messages in data
-                if "live_message_generate" in data:
-                    data["live_message_generate"] += " " + str(st.session_state.gen_messages)
-                else:
-                    data["live_message_generate"] = str(st.session_state.gen_messages)
-                save_participant_data(participant_id, data)
-
+                write_convo_version(data)
                 clear_gen_messages()
-                if "live_message_generate" in data:
-                    data["live_message_generate"] += " NEW ANSWER    =>       "
-                else:
-                    data["live_message_generate"] = ""
+                data["live_message_generate"].append("NEW CONVO =>")
                 data["clear_all_messages_count"] = data.get("clear_all_messages_count", 0) + 1
                 save_participant_data(participant_id, data)
                 st.rerun()
@@ -524,7 +515,7 @@ def main():
         show_timer = st.toggle("Show Timer", value=True)
         if show_timer:
             st.info(
-                "A timer has been added to help you monitor the time spent on this task, as the whole experiment is designed to be completed within 30 minutes. However, please do not worry if you cannot submit a complete or correct solution within this timeframe.")
+                "A timer has been added to help you monitor the time spent on this task, as the whole experiment is designed to be completed within 30 minutes. Please try to submit your solution within 15 minutes (or earlier). Don't worry if you cannot submit a complete or correct solution.")
             html(timer_script, height=100)
 
         st.markdown(f"#### Your Solution:")
@@ -560,10 +551,8 @@ def main():
                 st.error(ERROR_MSG)
             else:
                 # save messages in data
-                if "live_message_generate" in data:
-                    data["live_message_generate"] += " " + str(st.session_state.gen_messages)
-                else:
-                    data["live_message_generate"] = str(st.session_state.gen_messages)
+                write_convo_version(data)
+
                 # save solution in data
                 if "solution_generate" not in data:
                     data["solution_generate"] = str(solution)

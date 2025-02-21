@@ -75,7 +75,7 @@ if assigned_group == "group_tailored":
     - your task 
     - the information that you have entered in the previous survey
     """)
-st.markdown("Please be aware, that the answers from the GenAI tool are not always right. Feel free to change the settings above the GenAI tool to adjust the interaction and response style.")
+st.markdown("Feel free to change the settings above the GenAI tool to adjust the interaction and response style. Please be aware, that the answers from the GenAI tool are not always right or perfect.")
 st.divider()
 st.write("Your results will be saved as soon as you click on the 'Submit and continue' button on the right and you will be directed to the next page to conclude the experiment. "
          "You do not have to submit a correct answer, just try solving the task until you are satisfied. If it takes you more than 20 minutes, feel free to submit an incomplete or incorrect answer and make a small note to your submission stating that you are aware that it's incomplete or incorrect.")
